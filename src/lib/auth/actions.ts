@@ -103,7 +103,11 @@ export async function signUpAction(input: {
 
   if (needsConfirmation) return { status: "success", needsConfirmation: true };
 
-  return { status: "success" };
+  // Confirmation is off, so sign-up already established a session and the
+  // cookies are written. Navigate from the server: redirect() is encoded into
+  // the action response, so the browser moves immediately with no refresh.
+  // Must stay outside any try/catch — redirect() signals by throwing.
+  redirect("/dashboard");
 }
 
 export async function requestPasswordResetAction(

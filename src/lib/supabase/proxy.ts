@@ -67,6 +67,21 @@ export async function updateSession(request: NextRequest): Promise<NextResponse>
 
   const { pathname, search } = request.nextUrl;
 
+  /*
+   * Server Actions must never be answered with a proxy redirect.
+   *
+   * The client expects an RSC action payload; a 307 to a different page is
+   * not one, and Next surfaces it as "An unexpected response was received
+   * from the server" — even when the action itself succeeded. Sign-up hits
+   * this exactly: the action sets the session cookies, and the follow-up
+   * action traffic for /register is then eligible for the signed-in bounce
+   * below.
+   *
+   * Actions still get the refreshed cookies; they just handle their own
+   * navigation with redirect(), which Next encodes correctly for the client.
+   */
+  if (request.headers.get("next-action")) return response;
+
   if (!user && isProtected(pathname)) {
     const url = request.nextUrl.clone();
     url.pathname = "/login";
