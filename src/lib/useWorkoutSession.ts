@@ -65,6 +65,8 @@ export function useWorkoutSession(workout: Workout) {
   const session = useMemo(() => parseSession(raw, slug), [raw, slug]);
 
   const [rest, setRest] = useState<RestState | null>(null);
+  /** Which way the exercise screen should slide on the next change. */
+  const [direction, setDirection] = useState<"next" | "prev">("next");
 
   // Start a session on first visit. This writes to the store rather than to
   // component state, so React re-renders through the subscription above.
@@ -124,6 +126,7 @@ export function useWorkoutSession(workout: Workout) {
       setRest(null);
       const latest = parseSession(getSnapshot(slug), slug);
       if (!latest) return;
+      setDirection(index >= latest.currentIndex ? "next" : "prev");
       saveSession({
         ...latest,
         currentIndex: Math.min(Math.max(index, 0), exercises.length - 1),
@@ -165,6 +168,8 @@ export function useWorkoutSession(workout: Workout) {
         setRest(null);
         return;
       }
+
+      if (exerciseDone) setDirection("next");
 
       const upNext = exercises[nextIndex];
       setRest({
@@ -226,6 +231,14 @@ export function useWorkoutSession(workout: Workout) {
       : rest.remaining
     : 0;
 
+  // At zero the overlay lingers for a beat on a "rest complete" state, then
+  // hands back to the exercise screen.
+  useEffect(() => {
+    if (!rest?.endsAt || restRemaining > 0) return;
+    const timer = window.setTimeout(() => setRest(null), 1300);
+    return () => window.clearTimeout(timer);
+  }, [rest, restRemaining]);
+
   return {
     /** False until the persisted session has been read on the client. */
     hydrated: session !== null,
@@ -237,11 +250,10 @@ export function useWorkoutSession(workout: Workout) {
     totals,
     elapsedSeconds,
     isComplete: Boolean(session?.finishedAt),
-    // The overlay disappears on its own once the countdown reaches zero.
-    rest:
-      rest && restRemaining > 0
-        ? { ...rest, remaining: restRemaining, paused: rest.endsAt === null }
-        : null,
+    direction,
+    rest: rest
+      ? { ...rest, remaining: restRemaining, paused: rest.endsAt === null }
+      : null,
     completeSet,
     endRest,
     pauseRest,

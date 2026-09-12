@@ -97,7 +97,11 @@ export default async function WorkoutDetailPage({
               </div>
 
               <div className="mt-9">
-                <Button href={`/workouts/${workout.slug}/start`} size="lg">
+                <Button
+                  href={`/workouts/${workout.slug}/start`}
+                  size="lg"
+                  pendingLabel="Starting…"
+                >
                   <Play className="h-4 w-4" aria-hidden="true" />
                   Start Workout
                 </Button>

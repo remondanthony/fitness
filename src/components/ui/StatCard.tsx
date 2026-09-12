@@ -29,10 +29,10 @@ export function StatCard({
   const percent = progress === undefined ? undefined : Math.round(progress * 100);
 
   return (
+    // Metric tiles are read-only: no hover lift, so they never read as links.
     <Card
       tone="raised"
-      interactive
-      className={cn("group flex flex-col gap-5 p-5 sm:p-6", className)}
+      className={cn("flex flex-col gap-5 p-5 sm:p-6", className)}
     >
       <div className="flex items-start justify-between gap-4">
         <div className="min-w-0">
@@ -75,7 +75,7 @@ export function StatCard({
             aria-label={`${label} progress`}
           >
             <span
-              className="from-accent-600 to-accent-400 block h-full rounded-full bg-gradient-to-r transition-[width] duration-500"
+              className="from-accent-600 to-accent-400 bar-grow block h-full rounded-full bg-gradient-to-r"
               style={{ width: `${Math.min(100, percent)}%` }}
             />
           </div>

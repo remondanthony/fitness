@@ -118,7 +118,7 @@ export function ContactForm() {
         className="bg-accent-500 hover:bg-accent-400 active:bg-accent-600 shadow-glow inline-flex h-12 items-center justify-center gap-2.5 rounded-xl text-sm font-semibold text-white transition-[background-color,transform] duration-200 hover:-translate-y-0.5 disabled:pointer-events-none disabled:opacity-60 sm:w-fit sm:px-8"
       >
         {pending ? <Loader2 className="h-4 w-4 animate-spin" aria-hidden="true" /> : null}
-        Send Message
+        {pending ? "Sending…" : "Send Message"}
       </button>
     </form>
   );

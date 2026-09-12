@@ -55,7 +55,11 @@ export function TodayWorkoutCard({ workout }: { workout: Workout }) {
           </dl>
 
           <div className="mt-8 flex flex-col gap-3 sm:flex-row sm:items-center">
-            <Button href={`/workouts/${workout.slug}/start`} size="lg">
+            <Button
+              href={`/workouts/${workout.slug}/start`}
+              size="lg"
+              pendingLabel="Starting…"
+            >
               <Play className="h-4 w-4" aria-hidden="true" />
               Start Workout
               <ArrowRight

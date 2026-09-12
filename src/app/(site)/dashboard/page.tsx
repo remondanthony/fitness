@@ -88,7 +88,7 @@ export default function DashboardPage() {
                   aria-label="Streak progress toward personal best"
                 >
                   <span
-                    className="from-accent-600 to-accent-400 block h-full rounded-full bg-gradient-to-r"
+                    className="from-accent-600 to-accent-400 bar-grow block h-full rounded-full bg-gradient-to-r"
                     style={{ width: `${(12 / 14) * 100}%` }}
                   />
                 </div>

@@ -9,24 +9,31 @@ import { workoutMetaIcons, type Workout } from "@/data/workouts";
 
 type WorkoutCardProps = {
   workout: Workout;
+  /** Position in a grid — varies the artwork lighting. */
+  index?: number;
   /** `recent` surfaces the last completed session instead of the plan. */
   variant?: "recommended" | "recent";
 };
 
 /** Compact workout tile used by the Recent and Recommended shelves. */
-export function WorkoutCard({ workout, variant = "recommended" }: WorkoutCardProps) {
+export function WorkoutCard({
+  workout,
+  variant = "recommended",
+  index = 0,
+}: WorkoutCardProps) {
   const completed = variant === "recent" ? workout.lastCompleted : undefined;
   const DurationIcon = workoutMetaIcons.duration;
   const ExercisesIcon = workoutMetaIcons.exercises;
 
   return (
     <Card interactive flush className="group flex h-full flex-col">
-      <div className="relative">
+      <div className="relative overflow-hidden">
         <ImagePlaceholder
+          seed={index}
           variant={workout.artwork}
           aspect="photo"
           alt={`${workout.title} artwork`}
-          className="rounded-none border-0 border-b"
+          className="rounded-none border-0 border-b transition-transform duration-500 ease-out group-hover:scale-[1.02]"
         />
         <div className="absolute top-4 left-4">
           {completed ? (

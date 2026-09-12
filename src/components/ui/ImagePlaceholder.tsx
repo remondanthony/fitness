@@ -10,6 +10,8 @@ export type ImagePlaceholderVariant =
   | "program"
   | "coach"
   | "meal"
+  | "recovery"
+  | "profile"
   | "generic";
 
 const aspects = {
@@ -28,6 +30,8 @@ const defaultAlt: Record<ImagePlaceholderVariant, string> = {
   program: "Abstract illustration representing a training program",
   coach: "Illustration of a coach portrait",
   meal: "Illustration of a prepared meal bowl",
+  recovery: "Illustration of a stretching and mobility session",
+  profile: "Illustration of a member profile portrait",
   generic: "Abstract STRONGER illustration",
 };
 
@@ -40,6 +44,13 @@ type ImagePlaceholderProps = {
   caption?: string;
   /** Overlay content rendered above the artwork. */
   children?: ReactNode;
+  /**
+   * Shifts the ambient lighting so repeated placeholders of the same variant
+   * do not look identical. Pass a list index.
+   */
+  seed?: number;
+  /** Set false to hold the ambient light still. */
+  animated?: boolean;
   className?: string;
 };
 
@@ -54,11 +65,22 @@ export function ImagePlaceholder({
   alt,
   caption,
   children,
+  seed = 0,
+  animated = true,
   className,
 }: ImagePlaceholderProps) {
   const uid = useId().replace(/[^a-zA-Z0-9]/g, "");
   const id = (name: string) => `${name}-${uid}`;
   const description = alt ?? defaultAlt[variant];
+
+  // Small deterministic offsets keep repeated cards from reading as clones.
+  const step = ((seed % 4) + 4) % 4;
+  const ambient = {
+    x: [200, 560, 340, 660][step],
+    y: [180, 150, 400, 360][step],
+    r: [300, 250, 270, 230][step],
+    opacity: [0.62, 0.44, 0.55, 0.38][step],
+  };
 
   return (
     <div
@@ -132,14 +154,31 @@ export function ImagePlaceholder({
         <rect width="800" height="600" fill={`url(#${id("base")})`} />
         <rect width="800" height="600" fill={`url(#${id("mesh")})`} />
 
+        {/* Ambient light: seeded position, extremely slow drift. */}
+        <g
+          className={animated ? "motion-safe:animate-drift" : undefined}
+          style={{ transformOrigin: "center", transformBox: "fill-box" }}
+        >
+          <circle
+            cx={ambient.x}
+            cy={ambient.y}
+            r={ambient.r}
+            fill={`url(#${id("glow")})`}
+            opacity={ambient.opacity}
+          />
+        </g>
+
         {variant === "hero" ? <HeroArt id={id} /> : null}
         {variant === "athlete" ? <AthleteArt id={id} /> : null}
         {variant === "program" ? <ProgramArt id={id} /> : null}
         {variant === "coach" ? <CoachArt id={id} /> : null}
         {variant === "meal" ? <MealArt id={id} /> : null}
+        {variant === "recovery" ? <RecoveryArt id={id} /> : null}
+        {variant === "profile" ? <ProfileArt id={id} /> : null}
         {variant === "generic" ? <GenericArt id={id} /> : null}
 
-        {/* Cinematic falloff */}
+        {/* Depth: a soft top light over everything, then cinematic falloff. */}
+        <rect width="800" height="600" fill={`url(#${id("sheen")})`} opacity="0.5" />
         <rect width="800" height="600" fill={`url(#${id("vignette")})`} />
       </svg>
 
@@ -349,6 +388,91 @@ function MealArt({ id }: ArtProps) {
       <g stroke="#ffffff" strokeOpacity="0.14" strokeWidth="8" strokeLinecap="round" fill="none">
         <path d="M688 168 V432" />
         <path d="M660 168 V236 Q660 262 688 262" />
+      </g>
+    </>
+  );
+}
+
+/** Mobility work: a seated forward fold with motion arcs. */
+function RecoveryArt({ id }: ArtProps) {
+  return (
+    <>
+      <circle cx="430" cy="380" r="270" fill={`url(#${id("glow")})`} opacity="0.85" />
+      <ellipse cx="420" cy="470" rx="300" ry="90" fill="#ff5a1f" opacity="0.06" />
+
+      {/* Mat */}
+      <path d="M150 470 H650 L690 520 H110 Z" fill="#111116" />
+      <path d="M150 470 H650" stroke="#ffffff" strokeOpacity="0.08" strokeWidth="2" />
+
+      {/* Range-of-motion arcs */}
+      <g fill="none" stroke={`url(#${id("ember")})`} strokeLinecap="round" opacity="0.5">
+        <path d="M300 430 A 150 150 0 0 1 430 250" strokeWidth="4" strokeDasharray="10 16" />
+        <path d="M330 445 A 110 110 0 0 1 425 300" strokeWidth="3" strokeDasharray="8 14" opacity="0.6" />
+      </g>
+
+      {/* Seated forward fold */}
+      <g fill="#050506" stroke="#050506" strokeLinecap="round" strokeLinejoin="round">
+        {/* legs extended along the mat */}
+        <g strokeWidth="30" fill="none">
+          <path d="M330 452 H560" />
+        </g>
+        <rect x="548" y="418" width="20" height="42" rx="9" />
+        {/* torso folded forward over the legs */}
+        <path d="M300 452 L322 350 L372 358 L352 452 Z" strokeWidth="20" />
+        <circle cx="392" cy="336" r="26" />
+        {/* arm reaching toward the feet */}
+        <g strokeWidth="17" fill="none">
+          <path d="M372 366 L470 404 L534 430" />
+        </g>
+      </g>
+
+      <g fill="none" stroke="#ffffff" strokeOpacity="0.1" strokeWidth="2">
+        <path d="M120 520 H680" />
+      </g>
+    </>
+  );
+}
+
+/** Neutral member portrait for profile and avatar slots. */
+function ProfileArt({ id }: ArtProps) {
+  return (
+    <>
+      <circle cx="400" cy="290" r="230" fill={`url(#${id("glow")})`} opacity="0.5" />
+
+      {/* Portrait disc */}
+      <circle cx="400" cy="300" r="200" fill="#0e0e12" />
+      <circle
+        cx="400"
+        cy="300"
+        r="200"
+        fill="none"
+        stroke="#ffffff"
+        strokeOpacity="0.07"
+        strokeWidth="2"
+      />
+      <circle
+        cx="400"
+        cy="300"
+        r="200"
+        fill="none"
+        stroke={`url(#${id("ember")})`}
+        strokeWidth="4"
+        strokeDasharray="210 1050"
+        strokeLinecap="round"
+        opacity="0.75"
+        transform="rotate(-120 400 300)"
+      />
+
+      {/* Head and shoulders */}
+      <g fill="#050506">
+        <circle cx="400" cy="252" r="72" />
+        <path d="M268 500 Q268 356 400 340 Q532 356 532 500 Z" />
+      </g>
+
+      {/* Rim light down one side of the silhouette */}
+      <g fill="none" stroke={`url(#${id("ember")})`} strokeWidth="3.5" opacity="0.45" strokeLinecap="round">
+        <path d="M462 214 A 72 72 0 0 1 462 292" />
+        <path d="M508 402 Q532 440 532 498" />
       </g>
     </>
   );

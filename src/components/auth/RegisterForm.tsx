@@ -130,7 +130,9 @@ export function RegisterForm() {
 
       <FormStatus result={result} />
 
-      <SubmitButton pending={pending === "form"}>Create Account</SubmitButton>
+      <SubmitButton pending={pending === "form"} pendingLabel="Creating account…">
+        Create Account
+      </SubmitButton>
 
       <div className="flex items-center gap-4" aria-hidden="true">
         <span className="bg-chalk/10 h-px flex-1" />

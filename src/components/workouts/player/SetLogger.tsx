@@ -43,7 +43,7 @@ function Stepper({ label, unit, value, step, min = 0, onChange }: StepperProps) 
           type="button"
           onClick={() => onChange(clamp(value - step))}
           aria-label={`Decrease ${label}`}
-          className="border-chalk/12 bg-chalk/5 text-chalk hover:border-chalk/30 hover:bg-chalk/10 inline-flex h-11 w-11 shrink-0 items-center justify-center rounded-xl border transition-colors active:scale-95"
+          className="border-chalk/12 bg-chalk/5 text-chalk hover:border-chalk/30 hover:bg-chalk/10 press inline-flex h-11 w-11 shrink-0 items-center justify-center rounded-xl border"
         >
           <Minus className="h-4 w-4" aria-hidden="true" />
         </button>
@@ -71,7 +71,7 @@ function Stepper({ label, unit, value, step, min = 0, onChange }: StepperProps) 
           type="button"
           onClick={() => onChange(clamp(value + step))}
           aria-label={`Increase ${label}`}
-          className="border-chalk/12 bg-chalk/5 text-chalk hover:border-chalk/30 hover:bg-chalk/10 inline-flex h-11 w-11 shrink-0 items-center justify-center rounded-xl border transition-colors active:scale-95"
+          className="border-chalk/12 bg-chalk/5 text-chalk hover:border-chalk/30 hover:bg-chalk/10 press inline-flex h-11 w-11 shrink-0 items-center justify-center rounded-xl border"
         >
           <Plus className="h-4 w-4" aria-hidden="true" />
         </button>
@@ -101,16 +101,22 @@ export function SetLogger({
   return (
     <div className="flex flex-col gap-5">
       {/* Set progress */}
+      <p className="text-fog text-[11px] font-semibold tracking-[0.18em] uppercase">
+        <span className="text-accent-400">{loggedSets.length}</span> / {exercise.sets}{" "}
+        sets complete
+      </p>
+
       <ol className="flex flex-wrap items-center gap-2" aria-label="Sets completed">
         {Array.from({ length: exercise.sets }, (_, index) => {
           const logged = loggedSets[index];
           return (
-            <li key={index} className="flex-1">
+            // Keyed by state so a chip re-mounts — and pops — as it completes.
+            <li key={`${index}-${logged ? "done" : "todo"}`} className="flex-1">
               <div
                 className={cn(
                   "flex h-14 flex-col items-center justify-center rounded-xl border text-center transition-colors duration-300",
                   logged
-                    ? "border-accent-500/40 bg-accent-500/12"
+                    ? "border-accent-500/40 bg-accent-500/12 motion-safe:animate-check-pop"
                     : "border-chalk/10 bg-chalk/[0.03]",
                 )}
               >
@@ -146,7 +152,7 @@ export function SetLogger({
             <button
               type="button"
               onClick={onNextExercise}
-              className="bg-accent-500 hover:bg-accent-400 shadow-glow mt-5 inline-flex h-12 items-center justify-center rounded-full px-7 text-sm font-semibold text-white transition-colors"
+              className="bg-accent-500 hover:bg-accent-400 shadow-glow press mt-5 inline-flex h-12 items-center justify-center rounded-full px-7 text-sm font-semibold text-white"
             >
               Next Exercise
             </button>
@@ -168,7 +174,7 @@ export function SetLogger({
           <button
             type="button"
             onClick={() => onComplete(weight, reps)}
-            className="bg-accent-500 hover:bg-accent-400 active:bg-accent-600 shadow-glow font-display flex h-16 w-full items-center justify-center gap-3 rounded-2xl text-2xl text-white transition-colors sm:h-18 sm:text-3xl"
+            className="bg-accent-500 hover:bg-accent-400 active:bg-accent-600 shadow-glow font-display press flex h-16 w-full items-center justify-center gap-3 rounded-2xl text-2xl text-white sm:h-18 sm:text-3xl"
           >
             Complete Set
             <Check className="h-6 w-6" aria-hidden="true" />

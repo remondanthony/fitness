@@ -101,9 +101,9 @@ export default function NutritionPage() {
           </Card>
 
           <ul className="mt-6 grid gap-5 sm:grid-cols-2 xl:grid-cols-4">
-            {todaysMeals.map((meal) => (
+            {todaysMeals.map((meal, index) => (
               <li key={meal.id}>
-                <MealCard meal={meal} />
+                <MealCard meal={meal} index={index} />
               </li>
             ))}
           </ul>

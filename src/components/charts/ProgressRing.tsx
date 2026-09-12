@@ -40,7 +40,13 @@ export function ProgressRing({ value, label, size = 88, className }: ProgressRin
           strokeLinecap="round"
           strokeDasharray={circumference}
           strokeDashoffset={circumference * (1 - clamped)}
-          className="text-accent-500"
+          style={
+            {
+              "--ring-circumference": circumference,
+              "--ring-offset": circumference * (1 - clamped),
+            } as React.CSSProperties
+          }
+          className="text-accent-500 ring-grow"
         />
       </svg>
       <span className="font-display text-chalk absolute inset-0 flex items-center justify-center text-lg">

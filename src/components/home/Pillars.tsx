@@ -5,7 +5,7 @@ import { pillars } from "@/lib/content";
 
 export function Pillars() {
   return (
-    <section className="py-20 lg:py-28">
+    <section className="reveal py-20 lg:py-28">
       <Container>
         <SectionHeading
           eyebrow="The System"
@@ -18,7 +18,7 @@ export function Pillars() {
           description="Three pillars, one platform. Train with intent, fuel it properly and recover hard enough to do it again tomorrow."
         />
 
-        <ul className="mt-14 grid gap-5 md:grid-cols-3">
+        <ul className="reveal-stagger mt-14 grid gap-5 md:grid-cols-3">
           {pillars.map((pillar, index) => (
             <li key={pillar.id}>
               <Card interactive className="group flex h-full flex-col p-8">

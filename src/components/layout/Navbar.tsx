@@ -37,9 +37,9 @@ export function Navbar() {
   return (
     <header
       className={cn(
-        "sticky top-0 z-50 transition-[background-color,border-color,backdrop-filter] duration-300",
+        "animate-fade-in sticky top-0 z-50 transition-[background-color,border-color,backdrop-filter,box-shadow] duration-300",
         scrolled || open
-          ? "border-chalk/8 bg-ink-950/85 border-b backdrop-blur-xl"
+          ? "border-chalk/8 bg-ink-950/85 border-b shadow-[0_10px_30px_-24px_rgb(0_0_0/0.9)] backdrop-blur-xl"
           : "border-b border-transparent",
       )}
     >
@@ -90,7 +90,7 @@ export function Navbar() {
                     aria-label={link.label}
                     aria-current={active ? "page" : undefined}
                     className={cn(
-                      "inline-flex h-9 w-9 items-center justify-center rounded-xl border transition-colors duration-200",
+                      "press inline-flex h-9 w-9 items-center justify-center rounded-xl border",
                       active
                         ? "border-accent-500/40 bg-accent-500/12 text-accent-400"
                         : "border-chalk/10 bg-chalk/[0.04] text-mist hover:border-chalk/25 hover:text-chalk",
@@ -133,7 +133,7 @@ export function Navbar() {
       <div
         id="mobile-nav"
         hidden={!open}
-        className="border-chalk/8 bg-ink-950/95 border-t backdrop-blur-xl lg:hidden"
+        className="border-chalk/8 bg-ink-950/95 animate-rise border-t backdrop-blur-xl lg:hidden"
       >
         <Container className="py-6">
           <nav aria-label="Mobile">

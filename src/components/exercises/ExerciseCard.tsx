@@ -7,15 +7,23 @@ import { ImagePlaceholder } from "@/components/ui/ImagePlaceholder";
 import type { Exercise } from "@/data/exercises";
 
 /** Library tile: artwork, name, primary muscle, equipment and difficulty. */
-export function ExerciseCard({ exercise }: { exercise: Exercise }) {
+export function ExerciseCard({
+  exercise,
+  index = 0,
+}: {
+  exercise: Exercise;
+  /** Position in a grid — varies the artwork lighting. */
+  index?: number;
+}) {
   return (
     <Card interactive flush className="group flex h-full flex-col">
-      <div className="relative">
+      <div className="relative overflow-hidden">
         <ImagePlaceholder
+          seed={index}
           variant={exercise.artwork}
           aspect="photo"
           alt={`${exercise.name} illustration`}
-          className="rounded-none border-0 border-b"
+          className="rounded-none border-0 border-b transition-transform duration-500 ease-out group-hover:scale-[1.02]"
         />
         <div className="absolute top-4 left-4">
           <Badge variant="solid" size="sm">

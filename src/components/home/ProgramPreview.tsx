@@ -8,7 +8,7 @@ import { featuredPrograms } from "@/data/programs";
 
 export function ProgramPreview() {
   return (
-    <section className="py-20 lg:py-28">
+    <section className="reveal py-20 lg:py-28">
       <Container>
         <SectionHeading
           eyebrow="Programs"
@@ -25,10 +25,10 @@ export function ProgramPreview() {
           }
         />
 
-        <ul className="mt-14 grid gap-6 md:grid-cols-2 lg:grid-cols-3">
-          {featuredPrograms.map((program) => (
+        <ul className="reveal-stagger mt-14 grid gap-6 md:grid-cols-2 lg:grid-cols-3">
+          {featuredPrograms.map((program, index) => (
             <li key={program.slug}>
-              <ProgramCard program={program} variant="preview" />
+              <ProgramCard program={program} variant="preview" index={index} />
             </li>
           ))}
         </ul>

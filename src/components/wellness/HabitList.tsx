@@ -63,7 +63,7 @@ export function HabitList({ habits }: { habits: HabitView[] }) {
             <li key={habit.id}>
               <label
                 className={cn(
-                  "flex cursor-pointer items-center gap-4 rounded-2xl border p-4 transition-all duration-300 select-none",
+                  "press flex cursor-pointer items-center gap-4 rounded-2xl border p-4 select-none",
                   "has-[:focus-visible]:outline-accent-500 has-[:focus-visible]:outline-2 has-[:focus-visible]:outline-offset-2",
                   isDone
                     ? "border-accent-500/30 bg-accent-500/8"
@@ -86,7 +86,11 @@ export function HabitList({ habits }: { habits: HabitView[] }) {
                   )}
                   aria-hidden="true"
                 >
-                  {isDone ? <Check className="h-5 w-5" /> : habit.icon}
+                  {isDone ? (
+                    <Check className="motion-safe:animate-check-pop h-5 w-5" />
+                  ) : (
+                    habit.icon
+                  )}
                 </span>
 
                 <span className="min-w-0 flex-1">

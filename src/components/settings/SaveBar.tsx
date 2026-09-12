@@ -30,12 +30,12 @@ export function SaveBar({ label = "Profile updated" }: { label?: string }) {
         type="button"
         onClick={handleSave}
         disabled={state === "saving"}
-        className="bg-accent-500 hover:bg-accent-400 active:bg-accent-600 shadow-glow inline-flex h-11 items-center gap-2 rounded-full px-6 text-sm font-semibold text-white transition-[background-color,transform] duration-200 hover:-translate-y-0.5 disabled:pointer-events-none disabled:opacity-60"
+        className="bg-accent-500 hover:bg-accent-400 active:bg-accent-600 shadow-glow press inline-flex h-11 items-center gap-2 rounded-full px-6 text-sm font-semibold text-white hover:-translate-y-0.5 disabled:pointer-events-none disabled:opacity-60"
       >
         {state === "saving" ? (
           <Loader2 className="h-4 w-4 animate-spin" aria-hidden="true" />
         ) : null}
-        Save Changes
+        {state === "saving" ? "Saving…" : "Save Changes"}
       </button>
 
       <p className="text-fog text-xs">Changes are held in the browser only.</p>

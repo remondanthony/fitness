@@ -8,7 +8,7 @@ export function MacroCard({ macro }: { macro: MacroTarget }) {
   const Icon = macro.icon;
 
   return (
-    <Card tone="raised" interactive className="group flex h-full flex-col p-6">
+    <Card tone="raised" className="flex h-full flex-col p-6">
       <p className="text-fog flex items-center gap-2 text-[10px] font-semibold tracking-[0.2em] uppercase">
         <Icon className="text-accent-500 h-3.5 w-3.5" aria-hidden="true" />
         {macro.label}
@@ -40,7 +40,7 @@ export function MacroCard({ macro }: { macro: MacroTarget }) {
           aria-label={`${macro.label} logged today`}
         >
           <span
-            className="from-accent-600 to-accent-400 block h-full rounded-full bg-gradient-to-r"
+            className="from-accent-600 to-accent-400 bar-grow block h-full rounded-full bg-gradient-to-r"
             style={{ width: `${percent}%` }}
           />
         </div>

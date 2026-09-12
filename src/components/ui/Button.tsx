@@ -1,6 +1,7 @@
 import Link from "next/link";
 import type { AnchorHTMLAttributes, ButtonHTMLAttributes, ReactNode } from "react";
 
+import { LinkPending } from "@/components/ui/LinkPending";
 import { cn } from "@/lib/cn";
 
 const variants = {
@@ -23,6 +24,11 @@ type BaseProps = {
   size?: keyof typeof sizes;
   /** Renders full width on small screens, auto from `sm` up. */
   block?: boolean;
+  /**
+   * Label shown while the navigation this link starts is in flight, e.g.
+   * "Starting…". Links only; reflects real navigation state.
+   */
+  pendingLabel?: string;
   children?: ReactNode;
   className?: string;
 };
@@ -41,7 +47,7 @@ export type ButtonProps = ButtonAsButton | ButtonAsLink;
 
 function buttonClasses({ variant = "primary", size = "md", block, className }: BaseProps) {
   return cn(
-    "group/btn inline-flex select-none items-center justify-center gap-2 rounded-full font-semibold tracking-tight whitespace-nowrap transition-[background-color,border-color,color,box-shadow,transform] duration-200 hover:-translate-y-0.5 active:translate-y-0 disabled:pointer-events-none disabled:opacity-50",
+    "group/btn inline-flex select-none items-center justify-center gap-2 rounded-full font-semibold tracking-tight whitespace-nowrap transition-[background-color,border-color,color,box-shadow,transform] duration-200 hover:-translate-y-0.5 active:translate-y-0 active:scale-[0.98] disabled:pointer-events-none disabled:opacity-50",
     variants[variant],
     variant === "link" ? "" : sizes[size],
     block && "w-full sm:w-auto",
@@ -60,6 +66,7 @@ export function Button(props: ButtonProps) {
     block,
     className,
     children,
+    pendingLabel,
     ...rest
   } = props;
 
@@ -73,7 +80,11 @@ export function Button(props: ButtonProps) {
 
     return (
       <Link href={href} className={classes} {...anchorProps}>
-        {children}
+        {pendingLabel ? (
+          <LinkPending label={pendingLabel}>{children}</LinkPending>
+        ) : (
+          children
+        )}
       </Link>
     );
   }

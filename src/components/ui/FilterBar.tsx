@@ -94,10 +94,10 @@ export function FilterBar({
                   <label
                     key={option.value}
                     className={cn(
-                      "cursor-pointer rounded-full border px-4 py-2 text-xs font-semibold tracking-[0.06em] transition-all duration-200 select-none",
+                      "press cursor-pointer rounded-full border px-4 py-2 text-xs font-semibold tracking-[0.06em] select-none",
                       "has-[:focus-visible]:outline-accent-500 has-[:focus-visible]:outline-2 has-[:focus-visible]:outline-offset-2",
                       checked
-                        ? "border-accent-500 bg-accent-500 text-white shadow-glow"
+                        ? "border-accent-500 bg-accent-500/15 text-accent-400"
                         : "border-chalk/10 bg-chalk/[0.04] text-mist hover:border-chalk/25 hover:text-chalk",
                     )}
                   >

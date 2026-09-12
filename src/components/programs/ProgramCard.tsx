@@ -8,6 +8,8 @@ import { programMetaIcons, type Program } from "@/data/programs";
 
 type ProgramCardProps = {
   program: Program;
+  /** Position in a grid — varies the artwork lighting. */
+  index?: number;
   /**
    * `preview` is the compact homepage treatment; `full` adds equipment and a
    * call to action for the programs library.
@@ -16,7 +18,7 @@ type ProgramCardProps = {
 };
 
 /** Program tile used by both the homepage preview and the programs library. */
-export function ProgramCard({ program, variant = "full" }: ProgramCardProps) {
+export function ProgramCard({ program, variant = "full", index = 0 }: ProgramCardProps) {
   const href = `/programs/${program.slug}`;
 
   const meta =
@@ -35,12 +37,13 @@ export function ProgramCard({ program, variant = "full" }: ProgramCardProps) {
 
   return (
     <Card interactive flush className="group flex h-full flex-col">
-      <div className="relative">
+      <div className="relative overflow-hidden">
         <ImagePlaceholder
+          seed={index}
           variant={program.artwork}
           aspect="photo"
           alt={`${program.title} program artwork`}
-          className="rounded-none border-0 border-b"
+          className="rounded-none border-0 border-b transition-transform duration-500 ease-out group-hover:scale-[1.02]"
         />
         <div className="absolute top-4 left-4">
           <Badge variant="solid" size="sm">

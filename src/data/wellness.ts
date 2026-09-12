@@ -155,7 +155,7 @@ export const recoverySessions: RecoverySession[] = [
     blocks: ["90/90 hip switches", "Deep squat holds", "Ankle rocks", "Hamstring sweeps"],
     intensity: "Easy",
     icon: Waves,
-    artwork: "athlete",
+    artwork: "recovery",
   },
   {
     slug: "full-body-stretch",
@@ -166,7 +166,7 @@ export const recoverySessions: RecoverySession[] = [
     blocks: ["Thoracic opener", "Couch stretch", "Lat hang", "Pigeon", "Calf wall stretch"],
     intensity: "Easy",
     icon: Sparkles,
-    artwork: "generic",
+    artwork: "recovery",
   },
   {
     slug: "post-workout-recovery",
@@ -178,7 +178,7 @@ export const recoverySessions: RecoverySession[] = [
     blocks: ["Nasal breathing", "Shoulder circles", "Hip flexor stretch", "Easy walk"],
     intensity: "Easy",
     icon: HeartPulse,
-    artwork: "program",
+    artwork: "recovery",
   },
   {
     slug: "sleep-reset",
@@ -189,7 +189,7 @@ export const recoverySessions: RecoverySession[] = [
     blocks: ["Legs up the wall", "Box breathing", "Neck and jaw release", "Lights down"],
     intensity: "Easy",
     icon: Moon,
-    artwork: "generic",
+    artwork: "recovery",
   },
 ];
 

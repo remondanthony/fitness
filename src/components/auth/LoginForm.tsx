@@ -111,7 +111,9 @@ export function LoginForm() {
 
       <FormStatus result={result} />
 
-      <SubmitButton pending={pending === "form"}>Log In</SubmitButton>
+      <SubmitButton pending={pending === "form"} pendingLabel="Signing in…">
+        Log In
+      </SubmitButton>
 
       <div className="flex items-center gap-4" aria-hidden="true">
         <span className="bg-chalk/10 h-px flex-1" />

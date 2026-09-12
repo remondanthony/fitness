@@ -2,6 +2,7 @@ import type { ReactNode } from "react";
 
 import { Footer } from "@/components/layout/Footer";
 import { Navbar } from "@/components/layout/Navbar";
+import { PageTransition } from "@/components/layout/PageTransition";
 import { ToastProvider } from "@/components/ui/Toast";
 
 /** Standard site chrome: skip link, global navigation and footer. */
@@ -16,7 +17,7 @@ export default function SiteLayout({ children }: { children: ReactNode }) {
       </a>
       <Navbar />
       <main id="main" className="flex-1">
-        {children}
+        <PageTransition>{children}</PageTransition>
       </main>
       <Footer />
     </ToastProvider>

@@ -44,7 +44,7 @@ export default function ProgressPage() {
         <Container>
           <div className="grid gap-5 sm:grid-cols-2 lg:grid-cols-4">
             {progressStats.map((stat) => (
-              <Card key={stat.id} tone="raised" interactive className="group p-6">
+              <Card key={stat.id} tone="raised" className="p-6">
                 <p className="text-fog flex items-center gap-2 text-[10px] font-semibold tracking-[0.2em] uppercase">
                   <stat.icon className="text-accent-500 h-3.5 w-3.5" aria-hidden="true" />
                   {stat.label}

@@ -38,7 +38,7 @@ export default function ProfilePage() {
                 aria-hidden="true"
               />
               <ImagePlaceholder
-                variant="coach"
+                variant="profile"
                 aspect="square"
                 alt={`Profile picture placeholder for ${profile.name}`}
                 className="h-32 w-32 rounded-3xl sm:h-40 sm:w-40"
@@ -93,7 +93,7 @@ export default function ProfilePage() {
 
           <dl className="mt-6 grid gap-5 sm:grid-cols-2 lg:grid-cols-4">
             {profileDetails.map((detail) => (
-              <Card key={detail.id} tone="raised" interactive className="group p-6">
+              <Card key={detail.id} tone="raised" className="p-6">
                 <dt className="text-fog flex min-h-[2.1rem] items-start gap-2 text-[10px] font-semibold tracking-[0.2em] uppercase">
                   <detail.icon
                     className="text-accent-500 mt-px h-3.5 w-3.5 shrink-0"

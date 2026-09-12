@@ -8,7 +8,14 @@ import { StarRating } from "@/components/ui/StarRating";
 import type { Coach } from "@/data/coaching";
 
 /** Coach tile: portrait, specialty, and the three numbers people compare. */
-export function CoachCard({ coach }: { coach: Coach }) {
+export function CoachCard({
+  coach,
+  index = 0,
+}: {
+  coach: Coach;
+  /** Position in a grid — varies the artwork lighting. */
+  index?: number;
+}) {
   const stats = [
     { label: "Experience", value: `${coach.yearsExperience} yrs` },
     { label: "Rating", value: coach.rating.toFixed(1) },
@@ -17,12 +24,13 @@ export function CoachCard({ coach }: { coach: Coach }) {
 
   return (
     <Card interactive flush className="group flex h-full flex-col">
-      <div className="relative">
+      <div className="relative overflow-hidden">
         <ImagePlaceholder
+          seed={index}
           variant={coach.artwork}
           aspect="photo"
           alt={`Portrait illustration of ${coach.name}`}
-          className="rounded-none border-0 border-b"
+          className="rounded-none border-0 border-b transition-transform duration-500 ease-out group-hover:scale-[1.02]"
         />
         <div className="absolute top-4 left-4">
           <Badge variant="solid" size="sm">

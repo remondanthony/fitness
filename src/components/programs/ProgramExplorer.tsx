@@ -39,10 +39,10 @@ export function ProgramExplorer({ programs }: { programs: Program[] }) {
       </div>
 
       {results.length > 0 ? (
-        <ul className="grid gap-6 md:grid-cols-2 lg:grid-cols-3">
-          {results.map((program) => (
+        <ul key={results.length} className="animate-fade-in grid gap-6 md:grid-cols-2 lg:grid-cols-3">
+          {results.map((program, index) => (
             <li key={program.slug} className="animate-rise">
-              <ProgramCard program={program} />
+              <ProgramCard program={program} index={index} />
             </li>
           ))}
         </ul>

@@ -107,7 +107,11 @@ export default function WorkoutsPage() {
                 </div>
 
                 <div className="mt-9 flex flex-col gap-3 sm:flex-row sm:items-center">
-                  <Button href={`/workouts/${todaysWorkout.slug}/start`} size="lg">
+                  <Button
+                    href={`/workouts/${todaysWorkout.slug}/start`}
+                    size="lg"
+                    pendingLabel="Starting…"
+                  >
                     Start Workout
                     <ArrowRight
                       className="h-4 w-4 transition-transform duration-300 group-hover/btn:translate-x-1"
@@ -144,9 +148,9 @@ export default function WorkoutsPage() {
           />
 
           <ul className="mt-12 grid gap-6 md:grid-cols-2 lg:grid-cols-3">
-            {recentWorkouts.map((workout) => (
+            {recentWorkouts.map((workout, index) => (
               <li key={workout.slug}>
-                <WorkoutCard workout={workout} variant="recent" />
+                <WorkoutCard workout={workout} variant="recent" index={index} />
               </li>
             ))}
           </ul>
@@ -169,9 +173,9 @@ export default function WorkoutsPage() {
           />
 
           <ul className="mt-12 grid gap-6 md:grid-cols-2 lg:grid-cols-3">
-            {recommendedWorkouts.map((workout) => (
+            {recommendedWorkouts.map((workout, index) => (
               <li key={workout.slug}>
-                <WorkoutCard workout={workout} />
+                <WorkoutCard workout={workout} index={index} />
               </li>
             ))}
           </ul>

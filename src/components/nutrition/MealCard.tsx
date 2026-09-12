@@ -4,7 +4,14 @@ import { formatNumber } from "@/lib/format";
 import type { Meal } from "@/data/nutrition";
 
 /** One meal in today's plan, with its macro split. */
-export function MealCard({ meal }: { meal: Meal }) {
+export function MealCard({
+  meal,
+  index = 0,
+}: {
+  meal: Meal;
+  /** Position in a grid — varies the artwork lighting. */
+  index?: number;
+}) {
   const Icon = meal.icon;
 
   const macros = [
@@ -16,12 +23,13 @@ export function MealCard({ meal }: { meal: Meal }) {
 
   return (
     <Card interactive flush className="group flex h-full flex-col">
-      <div className="relative">
+      <div className="relative overflow-hidden">
         <ImagePlaceholder
+          seed={index}
           variant={meal.artwork}
           aspect="photo"
           alt={`${meal.title} illustration`}
-          className="rounded-none border-0 border-b"
+          className="rounded-none border-0 border-b transition-transform duration-500 ease-out group-hover:scale-[1.02]"
         />
         <div className="absolute top-4 left-4 flex items-center gap-2">
           <span className="border-chalk/10 bg-ink-950/75 text-chalk inline-flex items-center gap-1.5 rounded-full border px-3 py-1 text-[10px] font-semibold tracking-[0.16em] uppercase backdrop-blur-md">

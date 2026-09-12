@@ -45,7 +45,7 @@ export function AchievementCard({ achievement }: { achievement: Achievement }) {
           aria-label={`${achievement.title} progress`}
         >
           <span
-            className="bg-accent-500/70 block h-full rounded-full"
+            className="bg-accent-500/70 bar-grow block h-full rounded-full"
             style={{ width: `${percent}%` }}
           />
         </div>

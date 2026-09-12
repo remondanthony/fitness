@@ -27,6 +27,7 @@ export function WorkoutPlayer({ workout }: { workout: Workout }) {
     elapsedSeconds,
     isComplete,
     rest,
+    direction,
   } = session;
 
   if (!hydrated || !currentExercise) {
@@ -114,7 +115,9 @@ export function WorkoutPlayer({ workout }: { workout: Workout }) {
         </div>
       </header>
 
-      <div className="mx-auto flex w-full max-w-3xl flex-1 flex-col px-5 py-10 sm:px-8 sm:py-14">
+      {/* overflow-x-clip contains the directional slide without creating a
+          scroll container (which `hidden` would). */}
+      <div className="mx-auto flex w-full max-w-3xl flex-1 flex-col overflow-x-clip px-5 py-10 sm:px-8 sm:py-14">
         {rest ? (
           <div className="flex flex-1 items-center justify-center">
             <RestTimer
@@ -129,7 +132,12 @@ export function WorkoutPlayer({ workout }: { workout: Workout }) {
             />
           </div>
         ) : (
-          <div className="animate-rise flex flex-1 flex-col">
+          <div
+            key={currentExercise.id}
+            className={`flex flex-1 flex-col ${
+              direction === "next" ? "animate-slide-next" : "animate-slide-prev"
+            }`}
+          >
             <p className="text-accent-400 text-xs font-semibold tracking-[0.36em] uppercase">
               Exercise {padIndex(currentIndex + 1)} / {padIndex(exercises.length)}
             </p>

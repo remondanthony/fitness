@@ -8,7 +8,7 @@ import { goals } from "@/lib/content";
 
 export function Goals() {
   return (
-    <section className="border-chalk/8 bg-ink-900 relative overflow-hidden border-y py-20 lg:py-28">
+    <section className="border-chalk/8 bg-ink-900 reveal relative overflow-hidden border-y py-20 lg:py-28">
       <div
         className="bg-accent-500/8 pointer-events-none absolute top-1/2 left-1/2 h-[26rem] w-[26rem] -translate-x-1/2 -translate-y-1/2 rounded-full blur-[130px]"
         aria-hidden="true"
@@ -22,7 +22,7 @@ export function Goals() {
           description="Pick a direction and we will shape the training, nutrition and recovery around it."
         />
 
-        <ul className="mt-14 grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
+        <ul className="reveal-stagger mt-14 grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
           {goals.map((goal) => (
             <li key={goal.id}>
               <Card

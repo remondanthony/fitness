@@ -21,24 +21,44 @@ export function Hero() {
 
       <Container>
         <div className="grid items-center gap-12 lg:grid-cols-12 lg:gap-10">
-          <div className="animate-rise lg:col-span-6 xl:col-span-6">
-            <Badge variant="accent" className="gap-2">
+          <div className="lg:col-span-6 xl:col-span-6">
+            <Badge
+              variant="accent"
+              className="animate-rise gap-2"
+              style={{ animationDelay: "40ms" }}
+            >
               <span className="bg-accent-500 h-1.5 w-1.5 rounded-full" aria-hidden="true" />
               Fitness &amp; Wellness
             </Badge>
 
+            {/* Each line enters on its own beat. */}
             <h1 className="font-display text-chalk mt-7 text-[3.25rem] leading-[0.92] sm:text-7xl lg:text-[5.25rem] xl:text-[5.75rem]">
-              Build Your
-              <br />
-              Stronger Self<span className="text-accent-500">.</span>
+              <span
+                className="animate-rise block"
+                style={{ animationDelay: "120ms" }}
+              >
+                Build Your
+              </span>
+              <span
+                className="animate-rise block"
+                style={{ animationDelay: "220ms" }}
+              >
+                Stronger Self<span className="text-accent-500">.</span>
+              </span>
             </h1>
 
-            <p className="text-mist mt-7 max-w-xl text-base leading-relaxed sm:text-lg">
+            <p
+              className="text-mist animate-rise mt-7 max-w-xl text-base leading-relaxed sm:text-lg"
+              style={{ animationDelay: "340ms" }}
+            >
               Personalized training, nutrition and wellness programs designed around
               your goals.
             </p>
 
-            <div className="mt-10 flex flex-col gap-3 sm:flex-row sm:items-center sm:gap-4">
+            <div
+              className="animate-rise mt-10 flex flex-col gap-3 sm:flex-row sm:items-center sm:gap-4"
+              style={{ animationDelay: "440ms" }}
+            >
               <Button href="/register" size="lg">
                 Start Your Journey
                 <ArrowRight
@@ -51,7 +71,10 @@ export function Hero() {
               </Button>
             </div>
 
-            <p className="text-fog mt-8 text-xs tracking-[0.16em] uppercase">
+            <p
+              className="text-fog animate-rise mt-8 text-xs tracking-[0.16em] uppercase"
+              style={{ animationDelay: "540ms" }}
+            >
               No equipment required to start · Cancel anytime
             </p>
           </div>
@@ -66,7 +89,7 @@ export function Hero() {
               aspect="hero"
               alt="Athlete pressing a barbell overhead in a dark, cinematic gym"
               caption="The Strength Floor"
-              className="rounded-3xl shadow-lift"
+              className="animate-scale-in rounded-3xl shadow-lift"
             />
           </div>
         </div>
@@ -76,6 +99,7 @@ export function Hero() {
           tone="glass"
           flush
           className="animate-rise relative z-10 mt-10 rounded-3xl lg:-mt-14"
+          style={{ animationDelay: "620ms" }}
         >
           <div className="divide-chalk/8 grid grid-cols-2 divide-y divide-x sm:divide-y-0 lg:grid-cols-4">
             {heroMetrics.map((metric) => (

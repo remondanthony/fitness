@@ -6,17 +6,25 @@ import { ImagePlaceholder } from "@/components/ui/ImagePlaceholder";
 import type { RecoverySession } from "@/data/wellness";
 
 /** A guided recovery session: duration, focus and what it's made of. */
-export function RecoveryCard({ session }: { session: RecoverySession }) {
+export function RecoveryCard({
+  session,
+  index = 0,
+}: {
+  session: RecoverySession;
+  /** Position in a grid — varies the artwork lighting. */
+  index?: number;
+}) {
   const Icon = session.icon;
 
   return (
     <Card interactive flush className="group flex h-full flex-col">
-      <div className="relative">
+      <div className="relative overflow-hidden">
         <ImagePlaceholder
+          seed={index}
           variant={session.artwork}
           aspect="photo"
           alt={`${session.title} illustration`}
-          className="rounded-none border-0 border-b"
+          className="rounded-none border-0 border-b transition-transform duration-500 ease-out group-hover:scale-[1.02]"
         />
         <div className="absolute top-4 left-4">
           <Badge variant="solid" size="sm" className="gap-1.5">

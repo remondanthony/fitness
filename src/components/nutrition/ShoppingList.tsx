@@ -4,6 +4,7 @@ import { Check, ListChecks, ShoppingCart, X } from "lucide-react";
 import { useMemo, useState } from "react";
 
 import { Card } from "@/components/ui/Card";
+import { useToast } from "@/components/ui/Toast";
 import { cn } from "@/lib/cn";
 import { ingredientCategories, type Ingredient } from "@/data/nutrition";
 
@@ -17,6 +18,7 @@ export type ShoppingListMeal = { slot: string; ingredients: Ingredient[] };
 export function ShoppingList({ meals }: { meals: ShoppingListMeal[] }) {
   const [open, setOpen] = useState(false);
   const [checked, setChecked] = useState<string[]>([]);
+  const { notify } = useToast();
 
   const grouped = useMemo(() => {
     const items = meals.flatMap((meal) =>
@@ -45,10 +47,20 @@ export function ShoppingList({ meals }: { meals: ShoppingListMeal[] }) {
       <div className="flex flex-col items-start gap-4 sm:flex-row sm:items-center sm:justify-between">
         <button
           type="button"
-          onClick={() => setOpen((value) => !value)}
+          onClick={() => {
+            const next = !open;
+            setOpen(next);
+            if (next) {
+              notify({
+                tone: "success",
+                title: "Shopping list generated",
+                description: `${total} items from today's four meals, grouped by aisle.`,
+              });
+            }
+          }}
           aria-expanded={open}
           aria-controls="shopping-list"
-          className="bg-accent-500 hover:bg-accent-400 active:bg-accent-600 shadow-glow group/btn inline-flex h-12 items-center gap-2.5 rounded-full px-6 text-sm font-semibold text-white transition-[background-color,transform] duration-200 hover:-translate-y-0.5"
+          className="bg-accent-500 hover:bg-accent-400 active:bg-accent-600 shadow-glow press inline-flex h-12 items-center gap-2.5 rounded-full px-6 text-sm font-semibold text-white hover:-translate-y-0.5"
         >
           <ShoppingCart className="h-4 w-4" aria-hidden="true" />
           {open ? "Hide Shopping List" : "Generate Shopping List"}

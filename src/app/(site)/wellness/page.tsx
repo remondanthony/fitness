@@ -111,9 +111,9 @@ export default function WellnessPage() {
           />
 
           <ul className="mt-12 grid gap-5 sm:grid-cols-2 xl:grid-cols-4">
-            {recoverySessions.map((session) => (
+            {recoverySessions.map((session, index) => (
               <li key={session.slug}>
-                <RecoveryCard session={session} />
+                <RecoveryCard session={session} index={index} />
               </li>
             ))}
           </ul>
