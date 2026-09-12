@@ -17,63 +17,45 @@ import {
  * Part 12 replaces them with the member's own records.
  */
 export type Profile = {
+  /** Membership tier. Not yet persisted — arrives with billing. */
   plan: string;
   /** Current goal, matching the goals offered on the homepage. */
-  goal: string;
-  trainingLevel: string;
-  preferredEquipment: string;
-  weeklyFrequency: string;
   /** Slug of the program they are currently running. */
   currentProgramSlug: string;
 };
 
 export const profile: Profile = {
   plan: "Pro",
-  goal: "Build Muscle",
-  trainingLevel: "Intermediate",
-  preferredEquipment: "Full Gym",
-  weeklyFrequency: "5 days / week",
   currentProgramSlug: "power-build",
 };
 
-export type ProfileDetail = {
-  id: string;
-  label: string;
-  value: string;
-  icon: LucideIcon;
-  hint: string;
-};
-
-export const profileDetails: ProfileDetail[] = [
-  {
+/** Labels and hints for the profile's training cards. Values come from the database. */
+export const profileDetailMeta = {
+  goal: {
     id: "goal",
     label: "Current Goal",
-    value: profile.goal,
     icon: Target,
     hint: "Drives program and nutrition recommendations",
   },
-  {
+  level: {
     id: "level",
     label: "Training Level",
-    value: profile.trainingLevel,
     icon: Dumbbell,
     hint: "Sets the starting difficulty of new programs",
   },
-  {
+  equipment: {
     id: "equipment",
     label: "Preferred Equipment",
-    value: profile.preferredEquipment,
     icon: Settings2,
     hint: "Filters the programs you are shown",
   },
-  {
+  frequency: {
     id: "frequency",
     label: "Weekly Training Frequency",
-    value: profile.weeklyFrequency,
     icon: CalendarDays,
     hint: "How many sessions a week the plan schedules",
   },
-];
+} as const;
 
 // ---------------------------------------------------------------------------
 // Settings

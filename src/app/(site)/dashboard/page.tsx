@@ -6,6 +6,7 @@ import { Card } from "@/components/ui/Card";
 import { Container } from "@/components/ui/Container";
 import { StatCard } from "@/components/ui/StatCard";
 import { TodayWorkoutCard } from "@/components/dashboard/TodayWorkoutCard";
+import { getAccountView } from "@/lib/data/account-view";
 import { dailyMetrics } from "@/data/progress";
 import { todaysWorkout } from "@/data/workouts";
 
@@ -14,8 +15,16 @@ export const metadata: Metadata = {
   description: "Today's session, your daily metrics and where your training stands.",
 };
 
-export default function DashboardPage() {
+export default async function DashboardPage() {
+  // Protected route, so a member is always present.
+  const view = await getAccountView();
   const [streak, ...metrics] = dailyMetrics;
+
+  // Only greet by name once the member actually has one saved; otherwise the
+  // greeting stays generic rather than echoing an email local-part at them.
+  const firstName = view && !view.usingFallbackName
+    ? view.displayName.split(" ")[0]
+    : null;
 
   return (
     <>
@@ -33,8 +42,8 @@ export default function DashboardPage() {
                 <Sunrise className="h-4 w-4" aria-hidden="true" />
                 Monday · Week 12
               </p>
-              <h1 className="font-display text-chalk mt-5 text-5xl sm:text-6xl lg:text-7xl">
-                Good Morning.
+              <h1 className="font-display text-chalk mt-5 text-5xl break-words sm:text-6xl lg:text-7xl">
+                {firstName ? `Good Morning, ${firstName}.` : "Good Morning."}
               </h1>
               <p className="text-mist mt-4 text-base sm:text-lg">Ready to train?</p>
             </div>

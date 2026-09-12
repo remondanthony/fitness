@@ -4,6 +4,7 @@ import { useState } from "react";
 
 import { SaveBar } from "@/components/settings/SaveBar";
 import { SelectField } from "@/components/ui/SelectField";
+import { updatePreferencesAction } from "@/lib/actions/account";
 import {
   equipmentOptions,
   frequencyOptions,
@@ -12,13 +13,25 @@ import {
   unitOptions,
 } from "@/data/profile";
 
-/** Training preferences that shape programming and recommendations. */
-export function PreferencesSettings() {
-  const [goal, setGoal] = useState("build-muscle");
-  const [level, setLevel] = useState("intermediate");
-  const [equipment, setEquipment] = useState("full-gym");
-  const [frequency, setFrequency] = useState("5");
-  const [units, setUnits] = useState("metric");
+export type PreferenceValues = {
+  goal: string;
+  level: string;
+  equipment: string;
+  trainingDays: string;
+  units: string;
+};
+
+/**
+ * Training preferences. The values live across three tables — the goal in
+ * user_goals, experience level on the profile, and the rest in
+ * user_preferences — which the save action writes together.
+ */
+export function PreferencesSettings({ initial }: { initial: PreferenceValues }) {
+  const [goal, setGoal] = useState(initial.goal);
+  const [level, setLevel] = useState(initial.level);
+  const [equipment, setEquipment] = useState(initial.equipment);
+  const [trainingDays, setTrainingDays] = useState(initial.trainingDays);
+  const [units, setUnits] = useState(initial.units);
 
   return (
     <div className="flex flex-col gap-6">
@@ -46,8 +59,8 @@ export function PreferencesSettings() {
         />
         <SelectField
           label="Weekly Training Frequency"
-          value={frequency}
-          onChange={setFrequency}
+          value={trainingDays}
+          onChange={setTrainingDays}
           options={frequencyOptions}
           hint="How many sessions a week the plan schedules."
         />
@@ -60,7 +73,12 @@ export function PreferencesSettings() {
         />
       </div>
 
-      <SaveBar label="Preferences updated" />
+      <SaveBar
+        hint="Saved to your account."
+        onSave={() =>
+          updatePreferencesAction({ goal, level, equipment, trainingDays, units })
+        }
+      />
     </div>
   );
 }

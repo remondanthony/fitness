@@ -1,4 +1,5 @@
 import { ArrowRight, CalendarDays, Mail, Settings, ShieldCheck } from "lucide-react";
+import Link from "next/link";
 import type { Metadata } from "next";
 
 import { Badge } from "@/components/ui/Badge";
@@ -8,8 +9,8 @@ import { Container } from "@/components/ui/Container";
 import { ImagePlaceholder } from "@/components/ui/ImagePlaceholder";
 import { SectionHeading } from "@/components/ui/SectionHeading";
 import { ProgramCard } from "@/components/programs/ProgramCard";
-import { getSessionUser } from "@/lib/auth/session";
-import { profile, profileDetails } from "@/data/profile";
+import { getAccountView } from "@/lib/data/account-view";
+import { profile, profileDetailMeta } from "@/data/profile";
 import { getProgram } from "@/data/programs";
 import { progressStats } from "@/data/progress";
 
@@ -19,14 +20,22 @@ export const metadata: Metadata = {
 };
 
 export default async function ProfilePage() {
-  // The route is protected, so a user is always present here.
-  const user = await getSessionUser();
+  // The route is protected, so a member is always present here.
+  const view = await getAccountView();
   const currentProgram = getProgram(profile.currentProgramSlug);
 
-  const email = user?.email ?? "";
-  // Prefer the name captured at sign-up; otherwise use the local part of the
-  // email rather than inventing one.
-  const displayName = user?.displayName ?? email.split("@")[0] ?? "Your profile";
+  const email = view?.email ?? "";
+  const displayName = view?.displayName ?? "Your profile";
+
+  // Values the member has not set yet read as "Not set" rather than being
+  // filled with invented defaults.
+  const details = [
+    { ...profileDetailMeta.goal, value: view?.goalLabel },
+    { ...profileDetailMeta.level, value: view?.levelLabel },
+    { ...profileDetailMeta.equipment, value: view?.equipmentLabel },
+    { ...profileDetailMeta.frequency, value: view?.frequencyLabel },
+  ];
+  const hasAnyDetail = details.some((detail) => detail.value);
 
   return (
     <>
@@ -61,7 +70,9 @@ export default async function ProfilePage() {
                 </Badge>
                 <Badge variant="outline" className="gap-1.5">
                   <CalendarDays className="h-3 w-3" aria-hidden="true" />
-                  Signed in
+                  {view?.memberSince
+                    ? `Since ${new Date(view.memberSince).toLocaleDateString("en-GB", { month: "long", year: "numeric" })}`
+                    : "Signed in"}
                 </Badge>
               </div>
 
@@ -95,12 +106,22 @@ export default async function ProfilePage() {
       {/* Training profile */}
       <section className="py-14 lg:py-20">
         <Container>
-          <h2 className="text-fog text-[11px] font-semibold tracking-[0.28em] uppercase">
-            Training Profile
-          </h2>
+          <div className="flex flex-wrap items-center justify-between gap-4">
+            <h2 className="text-fog text-[11px] font-semibold tracking-[0.28em] uppercase">
+              Training Profile
+            </h2>
+            {!hasAnyDetail ? (
+              <Link
+                href="/profile/settings#preferences"
+                className="text-accent-400 hover:text-accent-300 text-xs font-semibold transition-colors"
+              >
+                Set your preferences →
+              </Link>
+            ) : null}
+          </div>
 
           <dl className="mt-6 grid gap-5 sm:grid-cols-2 lg:grid-cols-4">
-            {profileDetails.map((detail) => (
+            {details.map((detail) => (
               <Card key={detail.id} tone="raised" className="p-6">
                 <dt className="text-fog flex min-h-[2.1rem] items-start gap-2 text-[10px] font-semibold tracking-[0.2em] uppercase">
                   <detail.icon
@@ -109,8 +130,14 @@ export default async function ProfilePage() {
                   />
                   {detail.label}
                 </dt>
-                <dd className="font-display text-chalk mt-4 text-2xl leading-tight">
-                  {detail.value}
+                <dd
+                  className={
+                    detail.value
+                      ? "font-display text-chalk mt-4 text-2xl leading-tight"
+                      : "font-display text-fog mt-4 text-2xl leading-tight"
+                  }
+                >
+                  {detail.value ?? "Not set"}
                 </dd>
                 <p className="text-fog mt-4 text-xs leading-relaxed">{detail.hint}</p>
               </Card>

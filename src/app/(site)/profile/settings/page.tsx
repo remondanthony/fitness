@@ -5,7 +5,7 @@ import type { Metadata } from "next";
 import { Breadcrumbs } from "@/components/ui/Breadcrumbs";
 import { Container } from "@/components/ui/Container";
 import { AccountSettings } from "@/components/settings/AccountSettings";
-import { getSessionUser } from "@/lib/auth/session";
+import { getAccountView } from "@/lib/data/account-view";
 import { PreferencesSettings } from "@/components/settings/PreferencesSettings";
 import { SettingsSection } from "@/components/settings/SettingsSection";
 import { ToggleGroup } from "@/components/settings/ToggleGroup";
@@ -21,7 +21,8 @@ export const metadata: Metadata = {
 };
 
 export default async function SettingsPage() {
-  const user = await getSessionUser();
+  // The route is protected, so a member is always present here.
+  const view = await getAccountView();
   const [account, preferences, notifications, privacy] = settingsSections;
 
   return (
@@ -42,13 +43,18 @@ export default async function SettingsPage() {
           </p>
         </div>
 
-        <p className="text-fog border-chalk/10 bg-chalk/[0.03] mt-8 flex items-start gap-2.5 rounded-xl border px-4 py-3 text-xs leading-relaxed">
-          <Info className="mt-0.5 h-3.5 w-3.5 shrink-0" aria-hidden="true" />
-          <span>
-            Accounts are not connected yet, so changes on this page are held in the browser
-            and reset on reload.
-          </span>
-        </p>
+        {view?.loadError ? (
+          <p
+            role="alert"
+            className="mt-8 flex items-start gap-2.5 rounded-xl border border-red-500/30 bg-red-500/10 px-4 py-3 text-xs leading-relaxed text-red-300"
+          >
+            <Info className="mt-0.5 h-3.5 w-3.5 shrink-0" aria-hidden="true" />
+            <span>
+              We couldn&apos;t load some of your settings. The values below may be
+              incomplete — reload to try again.
+            </span>
+          </p>
+        ) : null}
 
         <div className="mt-10 grid gap-8 lg:grid-cols-12 lg:gap-10">
           {/* Section nav */}
@@ -80,8 +86,8 @@ export default async function SettingsPage() {
               icon={account.icon}
             >
               <AccountSettings
-                initialName={user?.displayName ?? ""}
-                initialEmail={user?.email ?? ""}
+                initialName={view?.displayName ?? ""}
+                email={view?.email ?? ""}
               />
             </SettingsSection>
 
@@ -91,7 +97,17 @@ export default async function SettingsPage() {
               description={preferences.description}
               icon={preferences.icon}
             >
-              <PreferencesSettings />
+              <PreferencesSettings
+                initial={
+                  view?.preferences ?? {
+                    goal: "build-muscle",
+                    level: "intermediate",
+                    equipment: "full-gym",
+                    trainingDays: "4",
+                    units: "metric",
+                  }
+                }
+              />
             </SettingsSection>
 
             <SettingsSection

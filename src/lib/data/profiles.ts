@@ -1,37 +1,54 @@
+import { cache } from "react";
+
+import { getSessionUser } from "@/lib/auth/session";
 import { createClient } from "@/lib/supabase/server";
-import type { TablesInsert, TablesUpdate } from "@/types/database";
+import type { TablesUpdate } from "@/types/database";
 
-/** Server-only. See src/lib/data/README.md. */
+/**
+ * Server-only profile access.
+ *
+ * Ownership is always taken from the authenticated session — never from a
+ * value supplied by the browser. RLS enforces the same rule in the database,
+ * so these two layers agree.
+ */
 
-/** The signed-in member's profile, or null if they have none yet. */
-export async function getProfile(userId: string) {
+/** Columns a member is allowed to change about themselves. */
+export type ProfilePatch = Pick<
+  TablesUpdate<"profiles">,
+  "display_name" | "first_name" | "last_name" | "bio" | "experience_level"
+>;
+
+/**
+ * The signed-in member's profile row.
+ *
+ * `null` data with no error means the row does not exist yet — a first-time
+ * state the UI renders as "not set" rather than inventing values.
+ */
+export const getCurrentProfile = cache(async () => {
+  const user = await getSessionUser();
+  if (!user) return { data: null, error: null, userId: null as string | null };
+
   const supabase = await createClient();
+  const { data, error } = await supabase
+    .from("profiles")
+    .select("*")
+    .eq("id", user.id)
+    .maybeSingle();
 
-  return supabase.from("profiles").select("*").eq("id", userId).maybeSingle();
-}
+  return { data, error, userId: user.id };
+});
 
-/** Updates the member's own profile. RLS rejects any other id. */
-export async function updateProfile(userId: string, patch: TablesUpdate<"profiles">) {
+/** Updates the signed-in member's own profile. */
+export async function updateCurrentProfile(patch: ProfilePatch) {
+  const user = await getSessionUser();
+  if (!user) return { data: null, error: { message: "Not signed in" } };
+
   const supabase = await createClient();
 
   return supabase
     .from("profiles")
     .update(patch)
-    .eq("id", userId)
-    .select()
-    .maybeSingle();
-}
-
-/**
- * Creates the profile row if the sign-up trigger did not (for example, for
- * accounts created before that migration ran).
- */
-export async function ensureProfile(profile: TablesInsert<"profiles">) {
-  const supabase = await createClient();
-
-  return supabase
-    .from("profiles")
-    .upsert(profile, { onConflict: "id", ignoreDuplicates: true })
+    .eq("id", user.id)
     .select()
     .maybeSingle();
 }

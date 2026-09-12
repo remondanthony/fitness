@@ -5,7 +5,14 @@ import { useState } from "react";
 import { Toggle } from "@/components/ui/Toggle";
 import type { ToggleSetting } from "@/data/profile";
 
-/** A list of switch settings. State only — nothing is persisted yet. */
+/**
+ * A list of switch settings.
+ *
+ * These channels have no column in the current schema — `user_preferences`
+ * carries a single `notifications_enabled` flag, not one per channel — so the
+ * choices are held in the browser and the caller says so. Persisting them
+ * needs a schema change, which is deliberately not made here.
+ */
 export function ToggleGroup({ settings }: { settings: ToggleSetting[] }) {
   const [enabled, setEnabled] = useState<string[]>(() =>
     settings.filter((setting) => setting.defaultOn).map((setting) => setting.id),
@@ -17,7 +24,12 @@ export function ToggleGroup({ settings }: { settings: ToggleSetting[] }) {
     );
 
   return (
-    <ul className="divide-chalk/8 flex flex-col divide-y">
+    <>
+      <p className="text-fog border-chalk/10 bg-chalk/[0.03] mb-5 rounded-xl border px-4 py-3 text-xs leading-relaxed">
+        These choices aren&apos;t saved to your account yet — they reset on reload.
+      </p>
+
+      <ul className="divide-chalk/8 flex flex-col divide-y">
       {settings.map((setting) => (
         <li
           key={setting.id}
@@ -34,6 +46,7 @@ export function ToggleGroup({ settings }: { settings: ToggleSetting[] }) {
           />
         </li>
       ))}
-    </ul>
+      </ul>
+    </>
   );
 }

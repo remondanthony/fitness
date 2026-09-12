@@ -5,22 +5,22 @@ import { useState } from "react";
 
 import { SaveBar } from "@/components/settings/SaveBar";
 import { TextField } from "@/components/ui/TextField";
+import { updateAccountAction } from "@/lib/actions/account";
 
 /**
- * Name, email and password.
+ * Name and password, loaded from the member's profile row.
  *
- * Prefilled from the real session; saving is still a placeholder until Part 12
- * wires profile persistence.
+ * Email is shown but not editable here: it lives in Supabase Auth rather than
+ * the profiles table, and changing it starts its own confirmation flow.
  */
 export function AccountSettings({
-  initialName = "",
-  initialEmail = "",
+  initialName,
+  email,
 }: {
-  initialName?: string;
-  initialEmail?: string;
+  initialName: string;
+  email: string;
 }) {
   const [name, setName] = useState(initialName);
-  const [email, setEmail] = useState(initialEmail);
   const [password, setPassword] = useState("");
 
   return (
@@ -32,14 +32,17 @@ export function AccountSettings({
           onChange={setName}
           autoComplete="name"
           icon={User}
+          placeholder="Your name"
         />
         <TextField
           label="Email"
           type="email"
           value={email}
-          onChange={setEmail}
+          onChange={() => {}}
           autoComplete="email"
           icon={Mail}
+          disabled
+          hint="Managed by your sign-in and can't be changed here yet."
         />
       </div>
 
@@ -53,7 +56,17 @@ export function AccountSettings({
         hint="Leave blank to keep your current password."
       />
 
-      <SaveBar />
+      <SaveBar
+        hint="Saved to your account."
+        onSave={async () => {
+          const result = await updateAccountAction({
+            displayName: name,
+            newPassword: password || undefined,
+          });
+          if (result.status === "success") setPassword("");
+          return result;
+        }}
+      />
 
       <div className="border-chalk/8 mt-2 border-t pt-6">
         <p className="text-chalk text-sm font-semibold">Delete account</p>
@@ -63,7 +76,9 @@ export function AccountSettings({
         </p>
         <button
           type="button"
-          className="mt-4 inline-flex h-10 items-center gap-2 rounded-full border border-red-500/30 bg-red-500/10 px-5 text-xs font-semibold text-red-300 transition-colors hover:border-red-500/60 hover:bg-red-500/20"
+          disabled
+          title="Account deletion arrives with account management"
+          className="mt-4 inline-flex h-10 cursor-not-allowed items-center gap-2 rounded-full border border-red-500/20 bg-red-500/5 px-5 text-xs font-semibold text-red-300/60"
         >
           <Trash2 className="h-3.5 w-3.5" aria-hidden="true" />
           Delete Account
