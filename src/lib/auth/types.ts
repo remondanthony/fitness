@@ -1,10 +1,4 @@
-/** Shapes the auth UI works against. These mirror what Supabase returns. */
-
-export type AuthUser = {
-  id: string;
-  name: string;
-  email: string;
-};
+/** Shapes the auth UI works against. */
 
 export type SignInInput = {
   email: string;
@@ -18,11 +12,12 @@ export type SignUpInput = {
   password: string;
 };
 
+/**
+ * Outcome of an auth Server Action, as rendered by the forms.
+ * `message` is always member-facing — raw Supabase errors never reach here.
+ */
 export type AuthResult =
-  | { status: "success"; user: AuthUser }
-  /** A real failure the member can act on, e.g. wrong password. */
-  | { status: "error"; message: string }
-  /** The backend is not wired up yet — informational, not a failure. */
-  | { status: "unavailable"; message: string };
+  | { status: "success"; message?: string }
+  | { status: "error"; message: string };
 
 export type FieldErrors = Record<string, string | undefined>;

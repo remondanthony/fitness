@@ -1,35 +1,35 @@
 "use client";
 
-import { Lock, Mail, MailCheck, User } from "lucide-react";
+import { KeyRound, Lock, ShieldCheck } from "lucide-react";
 import Link from "next/link";
 import { useState } from "react";
 
 import { FormStatus } from "@/components/auth/FormStatus";
-import { GoogleButton } from "@/components/auth/GoogleButton";
 import { SubmitButton } from "@/components/auth/SubmitButton";
 import { TextField } from "@/components/ui/TextField";
 import { cn } from "@/lib/cn";
-import { signUpAction } from "@/lib/auth/actions";
+import { updatePasswordAction } from "@/lib/auth/actions";
 import type { AuthResult, FieldErrors } from "@/lib/auth/types";
 import {
   MIN_PASSWORD_LENGTH,
   isClean,
   passwordStrength,
   validateConfirmation,
-  validateEmail,
-  validateName,
   validatePassword,
 } from "@/lib/auth/validation";
 
-export function RegisterForm() {
-  const [name, setName] = useState("");
-  const [email, setEmail] = useState("");
+/**
+ * Sets a new password using the recovery session established by the email
+ * link. `hasSession` is resolved on the server, so an expired or reused link
+ * shows an honest dead end instead of a form that cannot work.
+ */
+export function ResetPasswordForm({ hasSession }: { hasSession: boolean }) {
   const [password, setPassword] = useState("");
   const [confirmation, setConfirmation] = useState("");
   const [errors, setErrors] = useState<FieldErrors>({});
   const [pending, setPending] = useState(false);
   const [result, setResult] = useState<AuthResult | null>(null);
-  const [awaitingConfirmation, setAwaitingConfirmation] = useState(false);
+  const [done, setDone] = useState(false);
 
   const strength = passwordStrength(password);
 
@@ -37,8 +37,6 @@ export function RegisterForm() {
     event.preventDefault();
 
     const nextErrors: FieldErrors = {
-      name: validateName(name),
-      email: validateEmail(email),
       password: validatePassword(password),
       confirmation: validateConfirmation(password, confirmation),
     };
@@ -47,44 +45,53 @@ export function RegisterForm() {
     if (!isClean(nextErrors)) return;
 
     setPending(true);
-    const outcome = await signUpAction({ name, email, password });
+    const outcome = await updatePasswordAction(password);
     setPending(false);
 
-    if (outcome.status === "success" && outcome.needsConfirmation) {
-      setAwaitingConfirmation(true);
+    if (outcome.status === "success") {
+      setDone(true);
       return;
     }
 
     setResult(outcome);
   }
 
-  // Supabase created the account but withheld a session until the address is
-  // confirmed, so the form is replaced rather than showing a signed-in state.
-  if (awaitingConfirmation) {
+  if (!hasSession) {
+    return (
+      <div className="flex flex-col items-center text-center">
+        <span className="inline-flex h-14 w-14 items-center justify-center rounded-2xl border border-red-500/25 bg-red-500/10 text-red-400">
+          <KeyRound className="h-6 w-6" aria-hidden="true" />
+        </span>
+        <h2 className="font-display text-chalk mt-6 text-3xl">Link Expired.</h2>
+        <p className="text-mist mt-4 text-sm leading-relaxed">
+          This reset link has expired or was already used. Request a new one and it
+          will arrive in a moment.
+        </p>
+        <Link
+          href="/forgot-password"
+          className="bg-accent-500 hover:bg-accent-400 shadow-glow press mt-8 inline-flex h-12 items-center justify-center rounded-xl px-7 text-sm font-semibold text-white"
+        >
+          Request a new link
+        </Link>
+      </div>
+    );
+  }
+
+  if (done) {
     return (
       <div className="animate-rise flex flex-col items-center text-center">
         <span className="border-accent-500/30 bg-accent-500/12 text-accent-400 motion-safe:animate-check-pop inline-flex h-14 w-14 items-center justify-center rounded-2xl border">
-          <MailCheck className="h-6 w-6" aria-hidden="true" />
+          <ShieldCheck className="h-6 w-6" aria-hidden="true" />
         </span>
-
-        <h2 className="font-display text-chalk mt-6 text-3xl">Check Your Email.</h2>
-
+        <h2 className="font-display text-chalk mt-6 text-3xl">Password Updated.</h2>
         <p className="text-mist mt-4 text-sm leading-relaxed" role="status">
-          We&apos;ve sent a confirmation link to{" "}
-          <span className="text-chalk font-semibold">{email}</span>. Click it to
-          activate your account, then sign in.
+          Your password has been changed. You can sign in with it now.
         </p>
-
-        <p className="text-fog mt-5 text-xs leading-relaxed">
-          The link expires after a while. If it does not arrive within a few minutes,
-          check your spam folder.
-        </p>
-
         <Link
-          href="/login"
-          className="border-chalk/12 bg-chalk/5 text-chalk hover:border-chalk/30 press mt-8 inline-flex h-12 items-center justify-center rounded-xl border px-7 text-sm font-semibold"
+          href="/dashboard"
+          className="bg-accent-500 hover:bg-accent-400 shadow-glow press mt-8 inline-flex h-12 items-center justify-center rounded-xl px-7 text-sm font-semibold text-white"
         >
-          Go to sign in
+          Go to dashboard
         </Link>
       </div>
     );
@@ -92,32 +99,9 @@ export function RegisterForm() {
 
   return (
     <form onSubmit={handleSubmit} noValidate className="flex flex-col gap-5">
-      <TextField
-        label="Name"
-        value={name}
-        onChange={setName}
-        placeholder="Your name"
-        autoComplete="name"
-        icon={User}
-        error={errors.name}
-        disabled={pending}
-      />
-
-      <TextField
-        label="Email"
-        type="email"
-        value={email}
-        onChange={setEmail}
-        placeholder="you@example.com"
-        autoComplete="email"
-        icon={Mail}
-        error={errors.email}
-        disabled={pending}
-      />
-
       <div>
         <TextField
-          label="Password"
+          label="New Password"
           type="password"
           value={password}
           onChange={setPassword}
@@ -150,7 +134,7 @@ export function RegisterForm() {
       </div>
 
       <TextField
-        label="Confirm Password"
+        label="Confirm New Password"
         type="password"
         value={confirmation}
         onChange={setConfirmation}
@@ -163,19 +147,9 @@ export function RegisterForm() {
 
       <FormStatus result={result} />
 
-      <SubmitButton pending={pending} pendingLabel="Creating account…">
-        Create Account
+      <SubmitButton pending={pending} pendingLabel="Updating password…">
+        Update Password
       </SubmitButton>
-
-      <div className="flex items-center gap-4" aria-hidden="true">
-        <span className="bg-chalk/10 h-px flex-1" />
-        <span className="text-fog text-[10px] font-semibold tracking-[0.2em] uppercase">
-          or
-        </span>
-        <span className="bg-chalk/10 h-px flex-1" />
-      </div>
-
-      <GoogleButton label="Sign up with Google" />
     </form>
   );
 }

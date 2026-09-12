@@ -8,6 +8,7 @@ import { Container } from "@/components/ui/Container";
 import { ImagePlaceholder } from "@/components/ui/ImagePlaceholder";
 import { SectionHeading } from "@/components/ui/SectionHeading";
 import { ProgramCard } from "@/components/programs/ProgramCard";
+import { getSessionUser } from "@/lib/auth/session";
 import { profile, profileDetails } from "@/data/profile";
 import { getProgram } from "@/data/programs";
 import { progressStats } from "@/data/progress";
@@ -17,8 +18,15 @@ export const metadata: Metadata = {
   description: "Your account details, training preferences and current program.",
 };
 
-export default function ProfilePage() {
+export default async function ProfilePage() {
+  // The route is protected, so a user is always present here.
+  const user = await getSessionUser();
   const currentProgram = getProgram(profile.currentProgramSlug);
+
+  const email = user?.email ?? "";
+  // Prefer the name captured at sign-up; otherwise use the local part of the
+  // email rather than inventing one.
+  const displayName = user?.displayName ?? email.split("@")[0] ?? "Your profile";
 
   return (
     <>
@@ -40,7 +48,7 @@ export default function ProfilePage() {
               <ImagePlaceholder
                 variant="profile"
                 aspect="square"
-                alt={`Profile picture placeholder for ${profile.name}`}
+                alt={`Profile picture placeholder for ${displayName}`}
                 className="h-32 w-32 rounded-3xl sm:h-40 sm:w-40"
               />
             </div>
@@ -53,17 +61,17 @@ export default function ProfilePage() {
                 </Badge>
                 <Badge variant="outline" className="gap-1.5">
                   <CalendarDays className="h-3 w-3" aria-hidden="true" />
-                  Since {profile.memberSince}
+                  Signed in
                 </Badge>
               </div>
 
-              <h1 className="font-display text-chalk mt-5 text-5xl sm:text-6xl">
-                {profile.name}
+              <h1 className="font-display text-chalk mt-5 text-5xl break-words sm:text-6xl">
+                {displayName}
               </h1>
 
               <p className="text-mist mt-3 flex items-center gap-2.5 text-sm">
                 <Mail className="text-fog h-4 w-4 shrink-0" aria-hidden="true" />
-                {profile.email}
+                <span className="break-all">{email}</span>
               </p>
 
               <div className="mt-8 flex flex-col gap-3 sm:flex-row sm:items-center">

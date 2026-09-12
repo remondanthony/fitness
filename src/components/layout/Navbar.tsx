@@ -6,13 +6,20 @@ import { Menu, X } from "lucide-react";
 import { useEffect, useState } from "react";
 
 import { Button } from "@/components/ui/Button";
+import { SignOutButton } from "@/components/auth/SignOutButton";
 import { Container } from "@/components/ui/Container";
 import { Logo } from "@/components/layout/Logo";
 import { cn } from "@/lib/cn";
 import { appNav, primaryNav } from "@/lib/navigation";
 
-/** Sticky global navigation. Transparent over the hero, solid once scrolled. */
-export function Navbar() {
+/**
+ * Sticky global navigation. Transparent over the hero, solid once scrolled.
+ *
+ * `signedIn` is resolved on the server and passed in, so the first paint
+ * already shows the correct state — no flash of the logged-out header and no
+ * hydration mismatch.
+ */
+export function Navbar({ signedIn = false }: { signedIn?: boolean }) {
   const pathname = usePathname();
   const [open, setOpen] = useState(false);
   const [scrolled, setScrolled] = useState(false);
@@ -105,12 +112,18 @@ export function Navbar() {
 
           <span className="bg-chalk/10 mx-1 h-5 w-px" aria-hidden="true" />
 
-          <Button href="/login" variant="ghost" size="sm">
-            Log In
-          </Button>
-          <Button href="/register" size="sm">
-            Start Free
-          </Button>
+          {signedIn ? (
+            <SignOutButton />
+          ) : (
+            <>
+              <Button href="/login" variant="ghost" size="sm">
+                Log In
+              </Button>
+              <Button href="/register" size="sm">
+                Start Free
+              </Button>
+            </>
+          )}
         </div>
 
         <button
@@ -178,18 +191,29 @@ export function Navbar() {
           </div>
 
           <div className="mt-6 flex flex-col gap-3">
-            <Button href="/register" size="lg" className="w-full" onClick={() => setOpen(false)}>
-              Start Free
-            </Button>
-            <Button
-              href="/login"
-              variant="secondary"
-              size="lg"
-              className="w-full"
-              onClick={() => setOpen(false)}
-            >
-              Log In
-            </Button>
+            {signedIn ? (
+              <SignOutButton variant="menu" />
+            ) : (
+              <>
+                <Button
+                  href="/register"
+                  size="lg"
+                  className="w-full"
+                  onClick={() => setOpen(false)}
+                >
+                  Start Free
+                </Button>
+                <Button
+                  href="/login"
+                  variant="secondary"
+                  size="lg"
+                  className="w-full"
+                  onClick={() => setOpen(false)}
+                >
+                  Log In
+                </Button>
+              </>
+            )}
           </div>
         </Container>
       </div>

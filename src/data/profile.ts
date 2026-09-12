@@ -9,11 +9,14 @@ import {
   type LucideIcon,
 } from "lucide-react";
 
-/** The signed-in member. Mock data until accounts are connected. */
+/**
+ * Training preferences shown on the profile.
+ *
+ * Identity (name, email) now comes from the real Supabase session — it is
+ * deliberately absent here. These remaining fields are still sample data;
+ * Part 12 replaces them with the member's own records.
+ */
 export type Profile = {
-  name: string;
-  email: string;
-  memberSince: string;
   plan: string;
   /** Current goal, matching the goals offered on the homepage. */
   goal: string;
@@ -25,9 +28,6 @@ export type Profile = {
 };
 
 export const profile: Profile = {
-  name: "Riley Chen",
-  email: "riley.chen@example.com",
-  memberSince: "March 2026",
   plan: "Pro",
   goal: "Build Muscle",
   trainingLevel: "Intermediate",

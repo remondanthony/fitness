@@ -5,6 +5,7 @@ import type { Metadata } from "next";
 import { Breadcrumbs } from "@/components/ui/Breadcrumbs";
 import { Container } from "@/components/ui/Container";
 import { AccountSettings } from "@/components/settings/AccountSettings";
+import { getSessionUser } from "@/lib/auth/session";
 import { PreferencesSettings } from "@/components/settings/PreferencesSettings";
 import { SettingsSection } from "@/components/settings/SettingsSection";
 import { ToggleGroup } from "@/components/settings/ToggleGroup";
@@ -19,7 +20,8 @@ export const metadata: Metadata = {
   description: "Manage your account, training preferences, notifications and privacy.",
 };
 
-export default function SettingsPage() {
+export default async function SettingsPage() {
+  const user = await getSessionUser();
   const [account, preferences, notifications, privacy] = settingsSections;
 
   return (
@@ -77,7 +79,10 @@ export default function SettingsPage() {
               description={account.description}
               icon={account.icon}
             >
-              <AccountSettings />
+              <AccountSettings
+                initialName={user?.displayName ?? ""}
+                initialEmail={user?.email ?? ""}
+              />
             </SettingsSection>
 
             <SettingsSection

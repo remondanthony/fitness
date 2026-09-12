@@ -2,6 +2,7 @@
 
 import { Lock, Mail } from "lucide-react";
 import Link from "next/link";
+import { useSearchParams } from "next/navigation";
 import { useState } from "react";
 
 import { FormStatus } from "@/components/auth/FormStatus";
@@ -9,17 +10,26 @@ import { GoogleButton } from "@/components/auth/GoogleButton";
 import { SubmitButton } from "@/components/auth/SubmitButton";
 import { TextField } from "@/components/ui/TextField";
 import { cn } from "@/lib/cn";
-import { signIn, signInWithGoogle } from "@/lib/auth/client";
+import { signInAction } from "@/lib/auth/actions";
 import type { AuthResult, FieldErrors } from "@/lib/auth/types";
 import { isClean, validateEmail, validatePassword } from "@/lib/auth/validation";
 
 export function LoginForm() {
+  const searchParams = useSearchParams();
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [remember, setRemember] = useState(true);
   const [errors, setErrors] = useState<FieldErrors>({});
-  const [pending, setPending] = useState<"form" | "google" | null>(null);
-  const [result, setResult] = useState<AuthResult | null>(null);
+  const [pending, setPending] = useState(false);
+  const [result, setResult] = useState<AuthResult | null>(
+    // Set by /auth/callback when an email link could not be verified.
+    searchParams.get("error") === "link_invalid"
+      ? {
+          status: "error",
+          message: "That link has expired or was already used. Request a new one.",
+        }
+      : null,
+  );
 
   async function handleSubmit(event: React.FormEvent<HTMLFormElement>) {
     event.preventDefault();
@@ -32,17 +42,17 @@ export function LoginForm() {
     setResult(null);
     if (!isClean(nextErrors)) return;
 
-    setPending("form");
-    setResult(await signIn({ email, password, remember }));
-    setPending(null);
-  }
+    setPending(true);
 
-  async function handleGoogle() {
-    setErrors({});
-    setResult(null);
-    setPending("google");
-    setResult(await signInWithGoogle());
-    setPending(null);
+    // On success the Server Action redirects, so this never resolves.
+    const outcome = await signInAction({
+      email,
+      password,
+      next: searchParams.get("next") ?? undefined,
+    });
+
+    setResult(outcome);
+    setPending(false);
   }
 
   return (
@@ -56,7 +66,7 @@ export function LoginForm() {
         autoComplete="email"
         icon={Mail}
         error={errors.email}
-        disabled={pending !== null}
+        disabled={pending}
       />
 
       <TextField
@@ -68,7 +78,7 @@ export function LoginForm() {
         autoComplete="current-password"
         icon={Lock}
         error={errors.password}
-        disabled={pending !== null}
+        disabled={pending}
       />
 
       <div className="flex flex-wrap items-center justify-between gap-3">
@@ -111,7 +121,7 @@ export function LoginForm() {
 
       <FormStatus result={result} />
 
-      <SubmitButton pending={pending === "form"} pendingLabel="Signing in…">
+      <SubmitButton pending={pending} pendingLabel="Signing in…">
         Log In
       </SubmitButton>
 
@@ -123,11 +133,7 @@ export function LoginForm() {
         <span className="bg-chalk/10 h-px flex-1" />
       </div>
 
-      <GoogleButton
-        onClick={handleGoogle}
-        pending={pending === "google"}
-        disabled={pending !== null}
-      />
+      <GoogleButton />
     </form>
   );
 }

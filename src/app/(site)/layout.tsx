@@ -4,9 +4,12 @@ import { Footer } from "@/components/layout/Footer";
 import { Navbar } from "@/components/layout/Navbar";
 import { PageTransition } from "@/components/layout/PageTransition";
 import { ToastProvider } from "@/components/ui/Toast";
+import { getSessionUser } from "@/lib/auth/session";
 
 /** Standard site chrome: skip link, global navigation and footer. */
-export default function SiteLayout({ children }: { children: ReactNode }) {
+export default async function SiteLayout({ children }: { children: ReactNode }) {
+  const user = await getSessionUser();
+
   return (
     <ToastProvider>
       <a
@@ -15,7 +18,7 @@ export default function SiteLayout({ children }: { children: ReactNode }) {
       >
         Skip to content
       </a>
-      <Navbar />
+      <Navbar signedIn={user !== null} />
       <main id="main" className="flex-1">
         <PageTransition>{children}</PageTransition>
       </main>

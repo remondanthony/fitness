@@ -1,4 +1,4 @@
-import { AlertCircle, CheckCircle2, Info } from "lucide-react";
+import { AlertCircle, CheckCircle2 } from "lucide-react";
 
 import { cn } from "@/lib/cn";
 import type { AuthResult } from "@/lib/auth/types";
@@ -12,10 +12,6 @@ const tones = {
     icon: AlertCircle,
     className: "border-red-500/30 bg-red-500/10 text-red-300",
   },
-  unavailable: {
-    icon: Info,
-    className: "border-chalk/12 bg-chalk/5 text-mist",
-  },
 } as const;
 
 /** Renders the outcome of a submission. */
@@ -24,11 +20,16 @@ export function FormStatus({ result }: { result: AuthResult | null }) {
 
   const tone = tones[result.status];
   const Icon = tone.icon;
-  const message = result.status === "success" ? "Signed in." : result.message;
+  const message = result.message;
+  if (!message) return null;
 
   return (
     <p
-      role="status"
+      // Errors are announced assertively so a screen reader interrupts;
+      // successes are polite. Colour is never the only signal — each state
+      // carries an icon and its own wording.
+      role={result.status === "error" ? "alert" : "status"}
+      aria-live={result.status === "error" ? "assertive" : "polite"}
       className={cn(
         "flex items-start gap-2.5 rounded-xl border px-4 py-3 text-xs leading-relaxed",
         tone.className,

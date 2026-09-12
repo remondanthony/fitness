@@ -1,11 +1,9 @@
-"use client";
-
-import { Loader2 } from "lucide-react";
+import { Info } from "lucide-react";
 
 /** Inline Google mark — drawn as SVG so no external image is needed. */
 function GoogleMark() {
   return (
-    <svg viewBox="0 0 48 48" className="h-4 w-4" aria-hidden="true">
+    <svg viewBox="0 0 48 48" className="h-4 w-4 opacity-60" aria-hidden="true">
       <path
         fill="#4285F4"
         d="M45.1 24.5c0-1.6-.1-3.2-.4-4.7H24v8.9h11.8c-.5 2.8-2 5.1-4.4 6.7v5.5h7.1c4.2-3.8 6.6-9.5 6.6-16.4z"
@@ -26,33 +24,34 @@ function GoogleMark() {
   );
 }
 
-type GoogleButtonProps = {
-  onClick: () => void;
-  pending: boolean;
-  disabled?: boolean;
-  label?: string;
-};
-
-/** OAuth entry point. Wired to `signInWithGoogle` in the auth client. */
-export function GoogleButton({
-  onClick,
-  pending,
-  disabled,
-  label = "Continue with Google",
-}: GoogleButtonProps) {
+/**
+ * Google sign-in placeholder.
+ *
+ * The OAuth provider is not configured on the Supabase project, so the control
+ * is genuinely disabled and says so. It never pretends to sign anyone in.
+ * Enabling it later means adding the provider in Supabase and swapping this
+ * for a button that calls `signInWithOAuth({ provider: "google" })`.
+ */
+export function GoogleButton({ label = "Continue with Google" }: { label?: string }) {
   return (
-    <button
-      type="button"
-      onClick={onClick}
-      disabled={disabled || pending}
-      className="border-chalk/12 bg-chalk/5 text-chalk hover:border-chalk/30 hover:bg-chalk/10 inline-flex h-12 w-full items-center justify-center gap-3 rounded-xl border text-sm font-semibold transition-colors duration-200 disabled:opacity-50"
-    >
-      {pending ? (
-        <Loader2 className="h-4 w-4 animate-spin" aria-hidden="true" />
-      ) : (
+    <div className="flex flex-col gap-2.5">
+      <button
+        type="button"
+        disabled
+        aria-describedby="google-unavailable"
+        className="border-chalk/10 bg-chalk/[0.03] text-fog inline-flex h-12 w-full cursor-not-allowed items-center justify-center gap-3 rounded-xl border text-sm font-semibold"
+      >
         <GoogleMark />
-      )}
-      {label}
-    </button>
+        {label}
+      </button>
+
+      <p
+        id="google-unavailable"
+        className="text-fog flex items-start gap-2 text-xs leading-relaxed"
+      >
+        <Info className="mt-0.5 h-3.5 w-3.5 shrink-0" aria-hidden="true" />
+        Google sign-in isn&apos;t configured yet — use your email and password.
+      </p>
+    </div>
   );
 }

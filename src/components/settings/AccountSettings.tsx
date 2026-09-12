@@ -5,12 +5,22 @@ import { useState } from "react";
 
 import { SaveBar } from "@/components/settings/SaveBar";
 import { TextField } from "@/components/ui/TextField";
-import { profile } from "@/data/profile";
 
-/** Name, email and password. Submitting is a placeholder. */
-export function AccountSettings() {
-  const [name, setName] = useState(profile.name);
-  const [email, setEmail] = useState(profile.email);
+/**
+ * Name, email and password.
+ *
+ * Prefilled from the real session; saving is still a placeholder until Part 12
+ * wires profile persistence.
+ */
+export function AccountSettings({
+  initialName = "",
+  initialEmail = "",
+}: {
+  initialName?: string;
+  initialEmail?: string;
+}) {
+  const [name, setName] = useState(initialName);
+  const [email, setEmail] = useState(initialEmail);
   const [password, setPassword] = useState("");
 
   return (
