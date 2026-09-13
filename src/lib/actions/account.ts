@@ -5,20 +5,9 @@ import { revalidatePath } from "next/cache";
 import { getSessionUser } from "@/lib/auth/session";
 import { friendlyAuthMessage } from "@/lib/auth/errors";
 import { updateCurrentProfile } from "@/lib/data/profiles";
-import { upsertCurrentGoals } from "@/lib/data/goals";
-import { upsertCurrentPreferences } from "@/lib/data/preferences";
+import { getPersonalization, savePersonalization } from "@/lib/data/personalization";
 import { createClient } from "@/lib/supabase/server";
 import { MIN_PASSWORD_LENGTH } from "@/lib/auth/validation";
-import {
-  equipmentOptions,
-  goalOptions,
-  levelOptions,
-  parseTrainingDays,
-  pickOption,
-  TRAINING_DAYS_MAX,
-  TRAINING_DAYS_MIN,
-  unitOptions,
-} from "@/lib/personalization";
 
 /**
  * Server Actions for account data.
@@ -81,7 +70,17 @@ export async function updateAccountAction(input: {
   };
 }
 
-/** Training preferences: spread across profiles, user_goals and user_preferences. */
+/**
+ * Training preferences: spread across profiles, user_goals and user_preferences.
+ *
+ * Settings edits personalization; it does not establish it. A member who has
+ * not finished onboarding is turned away here rather than having the form's
+ * display values written as though they were answers — the selects have to
+ * show something, and "shown" must never become "chosen".
+ *
+ * The check runs on the server against the same completion rule onboarding
+ * uses, so it holds regardless of what the browser submits.
+ */
 export async function updatePreferencesAction(input: {
   goal: string;
   level: string;
@@ -92,41 +91,29 @@ export async function updatePreferencesAction(input: {
   const user = await getSessionUser();
   if (!user) return { status: "error", message: "Please sign in again." };
 
-  const goal = pickOption(goalOptions, input.goal);
-  const level = pickOption(levelOptions, input.level);
-  const equipment = pickOption(equipmentOptions, input.equipment);
-  const units = pickOption(unitOptions, input.units);
-  const trainingDays = parseTrainingDays(input.trainingDays);
+  const current = await getPersonalization();
 
-  if (!goal || !level || !equipment || !units) {
-    return { status: "error", message: "Those options aren't recognised." };
-  }
-  if (trainingDays === null) {
+  if (!current) return { status: "error", message: "Please sign in again." };
+
+  // Unverified is not the same as complete. Saving on a failed read is exactly
+  // the case where the form may be showing values nobody chose.
+  if (current.loadError) {
     return {
       status: "error",
-      message: `Choose between ${TRAINING_DAYS_MIN} and ${TRAINING_DAYS_MAX} training days.`,
+      message: "We couldn't check your saved preferences. Please try again.",
     };
   }
 
-  // Experience level belongs to the profile; the goal and the rest are their
-  // own rows. Each is keyed to the session user by the helper.
-  // A profile UPDATE that matches no row comes back as { data: null, error:
-  // null }, so the returned row — not just the absent error — is what proves
-  // the write landed.
-  const profile = await updateCurrentProfile({ experience_level: level });
-  if (profile.error || !profile.data) {
-    return { status: "error", message: GENERIC_SAVE_ERROR };
+  if (!current.complete) {
+    return {
+      status: "error",
+      message:
+        "Finish setting up your training first — head to onboarding, then these settings are yours to edit.",
+    };
   }
 
-  const goals = await upsertCurrentGoals({ primary_goal: goal });
-  if (goals.error) return { status: "error", message: GENERIC_SAVE_ERROR };
-
-  const preferences = await upsertCurrentPreferences({
-    units,
-    equipment_access: equipment,
-    preferred_training_days: trainingDays,
-  });
-  if (preferences.error) return { status: "error", message: GENERIC_SAVE_ERROR };
+  const { error } = await savePersonalization(input);
+  if (error) return { status: "error", message: error };
 
   revalidatePath("/", "layout");
 

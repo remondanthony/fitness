@@ -98,15 +98,18 @@ export default async function SettingsPage() {
               icon={preferences.icon}
             >
               <PreferencesSettings
+                // Empty strings, not stand-in defaults: an unanswered question
+                // must not arrive here looking like a choice.
                 initial={
                   view?.preferences ?? {
-                    goal: "build-muscle",
-                    level: "intermediate",
-                    equipment: "full-gym",
-                    trainingDays: "4",
-                    units: "metric",
+                    goal: "",
+                    level: "",
+                    equipment: "",
+                    trainingDays: "",
+                    units: "",
                   }
                 }
+                complete={view?.personalizationComplete ?? false}
               />
             </SettingsSection>
 

@@ -1,9 +1,16 @@
-import { getCurrentGoals } from "@/lib/data/goals";
-import { getCurrentPreferences } from "@/lib/data/preferences";
-import { getCurrentProfile } from "@/lib/data/profiles";
+import { getCurrentGoals, upsertCurrentGoals } from "@/lib/data/goals";
+import { getCurrentPreferences, upsertCurrentPreferences } from "@/lib/data/preferences";
+import { getCurrentProfile, updateCurrentProfile } from "@/lib/data/profiles";
 import {
+  equipmentOptions,
+  goalOptions,
   isPersonalizationComplete,
+  levelOptions,
   missingPersonalization,
+  parseTrainingDays,
+  pickOption,
+  unitOptions,
+  type PersonalizationAnswers,
   type PersonalizationState,
   type RequiredField,
 } from "@/lib/personalization";
@@ -70,4 +77,50 @@ export async function needsOnboarding(): Promise<boolean> {
   if (!view || view.loadError) return false;
 
   return !view.complete;
+}
+
+/**
+ * Writes all five personalization answers.
+ *
+ * The single write path, shared by onboarding and by settings. Keeping it here
+ * rather than in either action is what lets the two entry points differ in
+ * their rules — settings refuses to establish answers a member never gave —
+ * without either one growing its own copy of the writes or the validation.
+ *
+ * Every value is re-checked against the contract first, so nothing reaches the
+ * database that its CHECK constraints would reject. Ownership comes from the
+ * session inside each helper; no user id is accepted from the caller.
+ */
+export async function savePersonalization(
+  input: PersonalizationAnswers,
+): Promise<{ error: string | null }> {
+  const goal = pickOption(goalOptions, input.goal);
+  const level = pickOption(levelOptions, input.level);
+  const equipment = pickOption(equipmentOptions, input.equipment);
+  const units = pickOption(unitOptions, input.units);
+  const trainingDays = parseTrainingDays(input.trainingDays);
+
+  if (!goal || !level || !equipment || !units || trainingDays === null) {
+    return { error: "Those options aren't recognised." };
+  }
+
+  const GENERIC = "We couldn't save that. Please try again.";
+
+  // A profile UPDATE that matches no row comes back as { data: null, error:
+  // null }, so the returned row — not just the absent error — is what proves
+  // the write landed.
+  const profile = await updateCurrentProfile({ experience_level: level });
+  if (profile.error || !profile.data) return { error: GENERIC };
+
+  const goals = await upsertCurrentGoals({ primary_goal: goal });
+  if (goals.error) return { error: GENERIC };
+
+  const preferences = await upsertCurrentPreferences({
+    units,
+    equipment_access: equipment,
+    preferred_training_days: trainingDays,
+  });
+  if (preferences.error) return { error: GENERIC };
+
+  return { error: null };
 }

@@ -1,8 +1,10 @@
 "use server";
 
+import { revalidatePath } from "next/cache";
+
 import { getSessionUser } from "@/lib/auth/session";
-import { updatePreferencesAction, type SaveResult } from "@/lib/actions/account";
-import { getPersonalization } from "@/lib/data/personalization";
+import type { SaveResult } from "@/lib/actions/account";
+import { getPersonalization, savePersonalization } from "@/lib/data/personalization";
 import {
   equipmentOptions,
   goalOptions,
@@ -16,15 +18,15 @@ import {
 /**
  * Completing onboarding.
  *
- * The five answers already have a persistence path — `updatePreferencesAction`
- * writes exactly these fields across `profiles`, `user_goals` and
- * `user_preferences`, upserting on the unique `user_id` so a repeat submission
- * updates the same rows instead of adding more. Onboarding reuses it rather
- * than growing a second way to save the same data, which is also what keeps
- * settings and onboarding from becoming two sources of truth.
+ * This is the one place personalization is established. `savePersonalization`
+ * does the writing — the same path settings uses — upserting on the unique
+ * `user_id` so a repeat submission updates the same rows instead of adding
+ * more. Sharing that write is what keeps the two surfaces from becoming two
+ * sources of truth.
  *
- * What this adds on top is a completeness gate and a read-back: onboarding
- * must not report success unless every required answer is genuinely on record.
+ * Unlike settings, this action does not require onboarding to be complete
+ * already; completing it is the point. What it adds instead is a read-back:
+ * it must not report success unless every required answer is on record.
  */
 
 export async function completeOnboardingAction(
@@ -48,7 +50,7 @@ export async function completeOnboardingAction(
     };
   }
 
-  const saved = await updatePreferencesAction({
+  const saved = await savePersonalization({
     goal,
     level,
     equipment,
@@ -56,7 +58,7 @@ export async function completeOnboardingAction(
     trainingDays: String(trainingDays),
   });
 
-  if (saved.status === "error") return saved;
+  if (saved.error) return { status: "error", message: saved.error };
 
   // Read the answers back before calling onboarding done. Without this the UI
   // would navigate on the strength of a write it never confirmed, and a member
@@ -76,6 +78,10 @@ export async function completeOnboardingAction(
       message: "Something didn't save. Please try again.",
     };
   }
+
+  // The name, goal and training summary appear in the navbar, dashboard and
+  // profile, so the whole tree is revalidated once the answers are confirmed.
+  revalidatePath("/", "layout");
 
   return { status: "success", message: "You're all set" };
 }

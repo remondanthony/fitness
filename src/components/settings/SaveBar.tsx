@@ -16,15 +16,20 @@ import type { SaveResult } from "@/lib/actions/account";
 export function SaveBar({
   onSave,
   hint = "Saved to your account.",
+  disabled = false,
 }: {
   onSave: () => Promise<SaveResult>;
   hint?: string;
+  /** Blocks saving. The caller is responsible for saying why nearby. */
+  disabled?: boolean;
 }) {
   const [pending, setPending] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const { notify } = useToast();
 
   async function handleSave() {
+    if (disabled) return;
+
     setPending(true);
     setError(null);
 
@@ -46,7 +51,7 @@ export function SaveBar({
         <button
           type="button"
           onClick={handleSave}
-          disabled={pending}
+          disabled={pending || disabled}
           className="bg-accent-500 hover:bg-accent-400 active:bg-accent-600 shadow-glow press inline-flex h-11 items-center gap-2 rounded-full px-6 text-sm font-semibold text-white hover:-translate-y-0.5 disabled:pointer-events-none disabled:opacity-60"
         >
           {pending ? (

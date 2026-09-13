@@ -1,6 +1,8 @@
 import { getCurrentGoals } from "@/lib/data/goals";
 import { getCurrentPreferences } from "@/lib/data/preferences";
 import { getCurrentProfile } from "@/lib/data/profiles";
+import { getPersonalization } from "@/lib/data/personalization";
+import { toAnswers, type RequiredField } from "@/lib/personalization";
 import type { PreferenceValues } from "@/components/settings/PreferencesSettings";
 
 /**
@@ -8,18 +10,12 @@ import type { PreferenceValues } from "@/components/settings/PreferencesSettings
  * page makes one call instead of three and the empty-state rules live in one
  * place.
  *
- * Rows are absent until a member saves for the first time. Nothing is
- * invented to fill the gap — callers render "Not set".
+ * Rows are absent until a member saves for the first time. Nothing is invented
+ * to fill the gap — an unanswered preference comes back as an empty string and
+ * the settings form shows it as "Not set". Seeding those selects with
+ * plausible defaults used to mean a member could press Save and have values
+ * they never chose written as real answers.
  */
-
-/** Defaults used to seed the settings selects before anything is saved. */
-const FALLBACK: PreferenceValues = {
-  goal: "build-muscle",
-  level: "intermediate",
-  equipment: "full-gym",
-  trainingDays: "4",
-  units: "metric",
-};
 
 export type AccountView = {
   /** Best available name: saved profile name, else the email's local part. */
@@ -33,8 +29,15 @@ export type AccountView = {
   equipmentLabel: string | null;
   frequencyLabel: string | null;
   memberSince: string | null;
-  /** Seed values for the settings form. */
+  /**
+   * Values for the settings form. An empty string means the member has not
+   * answered that question — it is not a default standing in for one.
+   */
   preferences: PreferenceValues;
+  /** True once every required personalization answer is on record. */
+  personalizationComplete: boolean;
+  /** Which required answers are still missing. */
+  personalizationMissing: RequiredField[];
   /** Set when a query failed, so the UI can say so instead of showing blanks. */
   loadError: boolean;
 };
@@ -46,10 +49,17 @@ const label = (
   options.find((o) => o.value === value)?.label ?? null;
 
 export async function getAccountView(): Promise<AccountView | null> {
-  const [{ data: profile, error: profileError, userId }, goals, preferences] =
-    await Promise.all([getCurrentProfile(), getCurrentGoals(), getCurrentPreferences()]);
+  // Every one of these reads the same three cached queries, so asking for the
+  // personalization view alongside costs nothing extra.
+  const [{ data: profile, error: profileError, userId }, goals, preferences, personalization] =
+    await Promise.all([
+      getCurrentProfile(),
+      getCurrentGoals(),
+      getCurrentPreferences(),
+      getPersonalization(),
+    ]);
 
-  if (!userId) return null;
+  if (!userId || !personalization) return null;
 
   const { goalOptions, levelOptions, equipmentOptions, frequencyOptions } = await import(
     "@/data/profile"
@@ -77,13 +87,9 @@ export async function getAccountView(): Promise<AccountView | null> {
       trainingDays === null ? undefined : String(trainingDays),
     ),
     memberSince: profile?.created_at ?? null,
-    preferences: {
-      goal: goals.data?.primary_goal ?? FALLBACK.goal,
-      level: profile?.experience_level ?? FALLBACK.level,
-      equipment: preferences.data?.equipment_access ?? FALLBACK.equipment,
-      trainingDays: trainingDays === null ? FALLBACK.trainingDays : String(trainingDays),
-      units: preferences.data?.units ?? FALLBACK.units,
-    },
+    preferences: toAnswers(personalization.state),
+    personalizationComplete: personalization.complete,
+    personalizationMissing: personalization.missing,
     loadError: Boolean(profileError || goals.error || preferences.error),
   };
 }
