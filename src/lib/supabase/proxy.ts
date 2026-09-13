@@ -10,7 +10,7 @@ import {
 import type { Database } from "@/types/database";
 
 /** Routes that require a signed-in member. Prefix match. */
-const PROTECTED_PREFIXES = ["/dashboard", "/progress", "/profile"];
+const PROTECTED_PREFIXES = ["/dashboard", "/progress", "/profile", "/onboarding"];
 
 /** Signed-in members are bounced away from these. */
 const AUTH_ONLY_PREFIXES = ["/login", "/register", "/forgot-password"];

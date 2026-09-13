@@ -95,41 +95,20 @@ export const settingsSections: {
   },
 ];
 
-/** Option sets shared by the profile and settings forms. */
-export const goalOptions = [
-  { value: "build-muscle", label: "Build Muscle" },
-  { value: "lose-fat", label: "Lose Fat" },
-  { value: "get-stronger", label: "Get Stronger" },
-  { value: "improve-fitness", label: "Improve Fitness" },
-  { value: "improve-wellness", label: "Improve Wellness" },
-  { value: "live-healthier", label: "Live Healthier" },
-];
-
-export const levelOptions = [
-  { value: "beginner", label: "Beginner" },
-  { value: "intermediate", label: "Intermediate" },
-  { value: "advanced", label: "Advanced" },
-];
-
-export const equipmentOptions = [
-  { value: "no-equipment", label: "No Equipment" },
-  { value: "dumbbells", label: "Dumbbells" },
-  { value: "home-gym", label: "Home Gym" },
-  { value: "full-gym", label: "Full Gym" },
-];
-
-export const frequencyOptions = [
-  { value: "2", label: "2 days / week" },
-  { value: "3", label: "3 days / week" },
-  { value: "4", label: "4 days / week" },
-  { value: "5", label: "5 days / week" },
-  { value: "6", label: "6 days / week" },
-];
-
-export const unitOptions = [
-  { value: "metric", label: "Metric (kg, cm)" },
-  { value: "imperial", label: "Imperial (lb, ft)" },
-];
+/**
+ * Option sets for the profile and settings forms.
+ *
+ * These are re-exported from the personalization contract rather than
+ * redeclared, so settings, onboarding and the Server Actions all offer the
+ * same values as the database CHECK constraints allow.
+ */
+export {
+  goalOptions,
+  levelOptions,
+  equipmentOptions,
+  unitOptions,
+  trainingDayOptions as frequencyOptions,
+} from "@/lib/personalization";
 
 export type ToggleSetting = {
   id: string;

@@ -9,7 +9,7 @@ type SelectFieldProps = {
   label: string;
   value: string;
   onChange: (value: string) => void;
-  options: { value: string; label: string }[];
+  options: readonly { value: string; label: string }[];
   hint?: string;
   className?: string;
 };

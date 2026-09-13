@@ -1,5 +1,7 @@
 import { ArrowRight, Flame, Sunrise } from "lucide-react";
+import Link from "next/link";
 import type { Metadata } from "next";
+import { redirect } from "next/navigation";
 
 import { Button } from "@/components/ui/Button";
 import { Card } from "@/components/ui/Card";
@@ -8,6 +10,13 @@ import { StatCard } from "@/components/ui/StatCard";
 import { TodayWorkoutCard } from "@/components/dashboard/TodayWorkoutCard";
 import { getAccountView } from "@/lib/data/account-view";
 import { currentLogDate } from "@/lib/data/daily-date";
+import { getPersonalization } from "@/lib/data/personalization";
+import {
+  equipmentOptions,
+  goalOptions,
+  labelFor,
+  levelOptions,
+} from "@/lib/personalization";
 import { getWellnessLog, readingsFromLog } from "@/lib/data/wellness";
 import { buildDailyMetrics } from "@/data/progress";
 import { todaysWorkout } from "@/data/workouts";
@@ -19,10 +28,21 @@ export const metadata: Metadata = {
 
 export default async function DashboardPage() {
   // Protected route, so a member is always present.
-  const [view, wellness] = await Promise.all([
+  // getAccountView and getPersonalization read the same three cached queries,
+  // so asking for both costs one round trip each, not two.
+  const [view, wellness, personalization] = await Promise.all([
     getAccountView(),
     getWellnessLog(currentLogDate()),
+    getPersonalization(),
   ]);
+
+  // A member who has not answered the personalization questions is sent to
+  // onboarding. /onboarding never redirects back on load, so this cannot loop;
+  // a failed read reports incomplete as false, so a database hiccup does not
+  // eject a set-up member either.
+  if (personalization && !personalization.loadError && !personalization.complete) {
+    redirect("/onboarding");
+  }
 
   // The wellness tiles read the same row /wellness writes, so the two screens
   // can never disagree about the same day.
@@ -54,6 +74,36 @@ export default async function DashboardPage() {
                 {firstName ? `Good Morning, ${firstName}.` : "Good Morning."}
               </h1>
               <p className="text-mist mt-4 text-base sm:text-lg">Ready to train?</p>
+
+              {personalization?.complete ? (
+                <ul className="mt-6 flex flex-wrap items-center gap-2">
+                  {[
+                    labelFor(goalOptions, personalization.state.goal),
+                    labelFor(levelOptions, personalization.state.level),
+                    labelFor(equipmentOptions, personalization.state.equipment),
+                    personalization.state.trainingDays === null
+                      ? null
+                      : `${personalization.state.trainingDays}\u00d7 / week`,
+                  ]
+                    .filter((entry): entry is string => entry !== null)
+                    .map((entry) => (
+                      <li
+                        key={entry}
+                        className="border-chalk/12 bg-chalk/5 text-mist rounded-full border px-3.5 py-1.5 text-[11px] font-semibold tracking-[0.1em] uppercase"
+                      >
+                        {entry}
+                      </li>
+                    ))}
+                  <li>
+                    <Link
+                      href="/onboarding"
+                      className="text-fog hover:text-chalk focus-visible:outline-accent-500 rounded-full px-2 py-1.5 text-[11px] font-semibold tracking-[0.1em] uppercase transition-colors focus-visible:outline-2 focus-visible:outline-offset-2"
+                    >
+                      Edit
+                    </Link>
+                  </li>
+                </ul>
+              ) : null}
             </div>
 
             <Button href="/progress" variant="secondary">

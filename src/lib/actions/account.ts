@@ -9,12 +9,16 @@ import { upsertCurrentGoals } from "@/lib/data/goals";
 import { upsertCurrentPreferences } from "@/lib/data/preferences";
 import { createClient } from "@/lib/supabase/server";
 import { MIN_PASSWORD_LENGTH } from "@/lib/auth/validation";
-import type {
-  EquipmentAccess,
-  ExperienceLevel,
-  GoalKey,
-  Units,
-} from "@/types/database";
+import {
+  equipmentOptions,
+  goalOptions,
+  levelOptions,
+  parseTrainingDays,
+  pickOption,
+  TRAINING_DAYS_MAX,
+  TRAINING_DAYS_MIN,
+  unitOptions,
+} from "@/lib/personalization";
 
 /**
  * Server Actions for account data.
@@ -28,28 +32,6 @@ import type {
 export type SaveResult =
   | { status: "success"; message: string }
   | { status: "error"; message: string };
-
-const GOALS: readonly GoalKey[] = [
-  "build-muscle",
-  "lose-fat",
-  "get-stronger",
-  "improve-fitness",
-  "improve-wellness",
-  "live-healthier",
-];
-const LEVELS: readonly ExperienceLevel[] = ["beginner", "intermediate", "advanced"];
-const EQUIPMENT: readonly EquipmentAccess[] = [
-  "no-equipment",
-  "dumbbells",
-  "home-gym",
-  "full-gym",
-];
-const UNITS: readonly Units[] = ["metric", "imperial"];
-
-/** Rejects anything outside the set the database CHECK constraint allows. */
-function pick<T extends string>(allowed: readonly T[], value: string): T | null {
-  return (allowed as readonly string[]).includes(value) ? (value as T) : null;
-}
 
 const GENERIC_SAVE_ERROR = "We couldn't save that. Please try again.";
 
@@ -77,8 +59,10 @@ export async function updateAccountAction(input: {
     };
   }
 
-  const { error } = await updateCurrentProfile({ display_name: displayName });
-  if (error) return { status: "error", message: GENERIC_SAVE_ERROR };
+  const profile = await updateCurrentProfile({ display_name: displayName });
+  if (profile.error || !profile.data) {
+    return { status: "error", message: GENERIC_SAVE_ERROR };
+  }
 
   if (password) {
     const supabase = await createClient();
@@ -108,23 +92,31 @@ export async function updatePreferencesAction(input: {
   const user = await getSessionUser();
   if (!user) return { status: "error", message: "Please sign in again." };
 
-  const goal = pick(GOALS, input.goal);
-  const level = pick(LEVELS, input.level);
-  const equipment = pick(EQUIPMENT, input.equipment);
-  const units = pick(UNITS, input.units);
-  const trainingDays = Number.parseInt(input.trainingDays, 10);
+  const goal = pickOption(goalOptions, input.goal);
+  const level = pickOption(levelOptions, input.level);
+  const equipment = pickOption(equipmentOptions, input.equipment);
+  const units = pickOption(unitOptions, input.units);
+  const trainingDays = parseTrainingDays(input.trainingDays);
 
   if (!goal || !level || !equipment || !units) {
     return { status: "error", message: "Those options aren't recognised." };
   }
-  if (!Number.isInteger(trainingDays) || trainingDays < 1 || trainingDays > 7) {
-    return { status: "error", message: "Choose between 1 and 7 training days." };
+  if (trainingDays === null) {
+    return {
+      status: "error",
+      message: `Choose between ${TRAINING_DAYS_MIN} and ${TRAINING_DAYS_MAX} training days.`,
+    };
   }
 
   // Experience level belongs to the profile; the goal and the rest are their
   // own rows. Each is keyed to the session user by the helper.
+  // A profile UPDATE that matches no row comes back as { data: null, error:
+  // null }, so the returned row — not just the absent error — is what proves
+  // the write landed.
   const profile = await updateCurrentProfile({ experience_level: level });
-  if (profile.error) return { status: "error", message: GENERIC_SAVE_ERROR };
+  if (profile.error || !profile.data) {
+    return { status: "error", message: GENERIC_SAVE_ERROR };
+  }
 
   const goals = await upsertCurrentGoals({ primary_goal: goal });
   if (goals.error) return { status: "error", message: GENERIC_SAVE_ERROR };

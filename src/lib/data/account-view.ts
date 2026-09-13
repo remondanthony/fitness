@@ -39,7 +39,10 @@ export type AccountView = {
   loadError: boolean;
 };
 
-const label = (options: { value: string; label: string }[], value?: string | null) =>
+const label = (
+  options: readonly { value: string; label: string }[],
+  value?: string | null,
+) =>
   options.find((o) => o.value === value)?.label ?? null;
 
 export async function getAccountView(): Promise<AccountView | null> {
