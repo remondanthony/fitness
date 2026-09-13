@@ -511,7 +511,17 @@ export type Database = {
       };
     };
     Views: { [_ in never]: never };
-    Functions: { [_ in never]: never };
+    Functions: {
+      /**
+       * Deletes the calling member's own auth account, cascading to every
+       * application table. Argument-free by design — the target is always
+       * auth.uid(), so there is nothing here to point at another user.
+       */
+      delete_own_account: {
+        Args: Record<PropertyKey, never>;
+        Returns: undefined;
+      };
+    };
     Enums: { [_ in never]: never };
     CompositeTypes: { [_ in never]: never };
   };

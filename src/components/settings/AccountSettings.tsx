@@ -1,8 +1,9 @@
 "use client";
 
-import { Mail, Trash2, User } from "lucide-react";
+import { Mail, User } from "lucide-react";
 import { useState } from "react";
 
+import { DeleteAccountDialog } from "@/components/settings/DeleteAccountDialog";
 import { SaveBar } from "@/components/settings/SaveBar";
 import { TextField } from "@/components/ui/TextField";
 import { updateAccountAction } from "@/lib/actions/account";
@@ -69,20 +70,7 @@ export function AccountSettings({
       />
 
       <div className="border-chalk/8 mt-2 border-t pt-6">
-        <p className="text-chalk text-sm font-semibold">Delete account</p>
-        <p className="text-fog mt-1.5 max-w-lg text-xs leading-relaxed">
-          Permanently removes your account, training history and logged data. This cannot
-          be undone.
-        </p>
-        <button
-          type="button"
-          disabled
-          title="Account deletion arrives with account management"
-          className="mt-4 inline-flex h-10 cursor-not-allowed items-center gap-2 rounded-full border border-red-500/20 bg-red-500/5 px-5 text-xs font-semibold text-red-300/60"
-        >
-          <Trash2 className="h-3.5 w-3.5" aria-hidden="true" />
-          Delete Account
-        </button>
+        <DeleteAccountDialog />
       </div>
     </div>
   );
