@@ -7,7 +7,9 @@ import { Container } from "@/components/ui/Container";
 import { StatCard } from "@/components/ui/StatCard";
 import { TodayWorkoutCard } from "@/components/dashboard/TodayWorkoutCard";
 import { getAccountView } from "@/lib/data/account-view";
-import { dailyMetrics } from "@/data/progress";
+import { currentLogDate } from "@/lib/data/daily-date";
+import { getWellnessLog, readingsFromLog } from "@/lib/data/wellness";
+import { buildDailyMetrics } from "@/data/progress";
 import { todaysWorkout } from "@/data/workouts";
 
 export const metadata: Metadata = {
@@ -17,8 +19,14 @@ export const metadata: Metadata = {
 
 export default async function DashboardPage() {
   // Protected route, so a member is always present.
-  const view = await getAccountView();
-  const [streak, ...metrics] = dailyMetrics;
+  const [view, wellness] = await Promise.all([
+    getAccountView(),
+    getWellnessLog(currentLogDate()),
+  ]);
+
+  // The wellness tiles read the same row /wellness writes, so the two screens
+  // can never disagree about the same day.
+  const [streak, ...metrics] = buildDailyMetrics(readingsFromLog(wellness.data));
 
   // Only greet by name once the member actually has one saved; otherwise the
   // greeting stays generic rather than echoing an email local-part at them.

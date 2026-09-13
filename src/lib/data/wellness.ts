@@ -1,67 +1,77 @@
+import { cache } from "react";
+
+import { getSessionUser } from "@/lib/auth/session";
 import { createClient } from "@/lib/supabase/server";
-import type { TablesInsert } from "@/types/database";
+import { emptyReadings, type DailyReadings } from "@/data/wellness";
 
-/** Server-only. See src/lib/data/README.md. */
+/** Server-only. Ownership comes from the session, never from the browser. */
 
-/** The member's wellness entry for a given day (ISO `YYYY-MM-DD`). */
-export async function getWellnessLog(userId: string, logDate: string) {
+export type WellnessReadings = {
+  sleep_hours: number | null;
+  water_liters: number | null;
+  steps: number | null;
+  mindfulness_minutes: number | null;
+  recovery_score: number | null;
+};
+
+/** The member's wellness readings for one day, or null if nothing is logged. */
+export const getWellnessLog = cache(async (logDate: string) => {
+  const user = await getSessionUser();
+  if (!user) return { data: null, error: false };
+
   const supabase = await createClient();
-
-  return supabase
+  const { data, error } = await supabase
     .from("wellness_logs")
-    .select("*")
-    .eq("user_id", userId)
+    .select("sleep_hours, water_liters, steps, mindfulness_minutes, recovery_score, log_date")
+    .eq("user_id", user.id)
     .eq("log_date", logDate)
     .maybeSingle();
-}
 
-/**
- * Writes the day's wellness entry. One row per member per day is enforced by
- * the database, so this upserts on that pair.
- */
-export async function upsertWellnessLog(entry: TablesInsert<"wellness_logs">) {
+  return { data, error: Boolean(error) };
+});
+
+/** Writes the day's readings; `(user_id, log_date)` is unique. */
+export async function upsertWellnessLog(
+  logDate: string,
+  readings: WellnessReadings,
+): Promise<{ error: string | null }> {
+  const user = await getSessionUser();
+  if (!user) return { error: "Please sign in again." };
+
   const supabase = await createClient();
-
-  return supabase
+  const { error } = await supabase
     .from("wellness_logs")
-    .upsert(entry, { onConflict: "user_id,log_date" })
-    .select()
-    .single();
-}
+    .upsert(
+      { user_id: user.id, log_date: logDate, ...readings },
+      { onConflict: "user_id,log_date" },
+    );
 
-/** The member's active habits. */
-export async function getActiveHabits(userId: string) {
-  const supabase = await createClient();
-
-  return supabase
-    .from("habits")
-    .select("*")
-    .eq("user_id", userId)
-    .eq("active", true)
-    .order("created_at", { ascending: true });
+  return { error: error ? "We couldn't save your wellness log." : null };
 }
 
 /**
- * Marks a habit done for a date. The once-per-day constraint makes a repeat
- * press a no-op rather than a duplicate row.
+ * Converts a stored row into the shape the metric tiles read.
+ *
+ * A missing row and a row with blank columns mean the same thing to the UI —
+ * nothing logged — so both collapse to nulls here rather than to zeros, which
+ * would claim the member slept for no hours and took no steps.
  */
-export async function completeHabit(entry: TablesInsert<"habit_completions">) {
-  const supabase = await createClient();
+export function readingsFromLog(
+  log: {
+    sleep_hours: number | null;
+    water_liters: number | null;
+    steps: number | null;
+    mindfulness_minutes: number | null;
+    recovery_score: number | null;
+  } | null,
+): DailyReadings {
+  if (!log) return emptyReadings;
 
-  return supabase
-    .from("habit_completions")
-    .upsert(entry, { onConflict: "habit_id,completed_date", ignoreDuplicates: true })
-    .select()
-    .maybeSingle();
-}
-
-/** Removes a habit completion, for when a member un-ticks it. */
-export async function uncompleteHabit(habitId: string, completedDate: string) {
-  const supabase = await createClient();
-
-  return supabase
-    .from("habit_completions")
-    .delete()
-    .eq("habit_id", habitId)
-    .eq("completed_date", completedDate);
+  return {
+    sleepHours: log.sleep_hours,
+    waterLiters: log.water_liters,
+    steps: log.steps,
+    mindfulnessMinutes: log.mindfulness_minutes,
+    recoveryScore: log.recovery_score,
+  };
 }

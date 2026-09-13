@@ -2,9 +2,21 @@ import { Card } from "@/components/ui/Card";
 import { formatNumber } from "@/lib/format";
 import type { MacroTarget } from "@/data/nutrition";
 
-/** One daily macro target, with how much of it has been logged so far. */
-export function MacroCard({ macro }: { macro: MacroTarget }) {
-  const percent = Math.min(100, Math.round((macro.consumed / macro.value) * 100));
+/**
+ * One daily macro target, with how much of it has been logged so far.
+ *
+ * `logged` is null until the member records the figure. An unlogged macro
+ * shows an em dash and an empty bar rather than a zero, which would read as
+ * "you ate nothing" instead of "you haven't said yet".
+ */
+export function MacroCard({
+  macro,
+  logged,
+}: {
+  macro: MacroTarget;
+  logged: number | null;
+}) {
+  const percent = logged === null ? 0 : Math.min(100, Math.round((logged / macro.value) * 100));
   const Icon = macro.icon;
 
   return (
@@ -27,7 +39,7 @@ export function MacroCard({ macro }: { macro: MacroTarget }) {
         <div className="text-fog flex items-baseline justify-between text-[10px] font-semibold tracking-[0.14em] uppercase">
           <span>Logged today</span>
           <span className="text-chalk">
-            {formatNumber(macro.consumed)} {macro.unit}
+            {logged === null ? "—" : `${formatNumber(logged)} ${macro.unit}`}
           </span>
         </div>
 

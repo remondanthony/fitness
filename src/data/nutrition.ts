@@ -12,16 +12,27 @@ import {
 
 import type { ImagePlaceholderVariant } from "@/components/ui/ImagePlaceholder";
 
+/** A macro key, shared by the targets and the member's logged totals. */
+export type MacroKey = "calories" | "protein" | "carbs" | "fat";
+
 export type MacroTarget = {
-  id: string;
+  id: MacroKey;
   label: string;
   /** Daily target. */
   value: number;
   unit: string;
-  /** Logged so far today. */
-  consumed: number;
   icon: LucideIcon;
   caption: string;
+};
+
+/** What the member has logged today. Null means the figure isn't recorded. */
+export type LoggedMacros = Record<MacroKey, number | null>;
+
+export const emptyMacros: LoggedMacros = {
+  calories: null,
+  protein: null,
+  carbs: null,
+  fat: null,
 };
 
 export const macroTargets: MacroTarget[] = [
@@ -30,7 +41,6 @@ export const macroTargets: MacroTarget[] = [
     label: "Daily Calories",
     value: 2050,
     unit: "kcal",
-    consumed: 1410,
     icon: Flame,
     caption: "Maintenance plus a small surplus",
   },
@@ -39,7 +49,6 @@ export const macroTargets: MacroTarget[] = [
     label: "Protein",
     value: 160,
     unit: "g",
-    consumed: 118,
     icon: Beef,
     caption: "Roughly 2.1 g per kg of bodyweight",
   },
@@ -48,7 +57,6 @@ export const macroTargets: MacroTarget[] = [
     label: "Carbs",
     value: 205,
     unit: "g",
-    consumed: 160,
     icon: Croissant,
     caption: "Weighted toward training days",
   },
@@ -57,7 +65,6 @@ export const macroTargets: MacroTarget[] = [
     label: "Fat",
     value: 64,
     unit: "g",
-    consumed: 32,
     icon: Droplets,
     caption: "About 28% of your daily calories",
   },

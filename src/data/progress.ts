@@ -1,4 +1,4 @@
-import { dailyReadings, formatSleep } from "@/data/wellness";
+import { formatSleep, wellnessGoals, type DailyReadings } from "@/data/wellness";
 import {
   Award,
   Dumbbell,
@@ -36,56 +36,79 @@ export type DailyMetric = {
   ring?: boolean;
 };
 
-export const dailyMetrics: DailyMetric[] = [
-  {
-    id: "streak",
-    label: "Workout Streak",
-    value: "12 Days",
-    icon: Flame,
-    caption: "Longest this year — keep it alive",
-  },
-  {
-    id: "weekly-workouts",
-    label: "Weekly Workouts",
-    value: "4 / 5",
-    icon: Dumbbell,
-    progress: 4 / 5,
-    caption: "One session left this week",
-  },
-  {
-    id: "water",
-    label: "Water",
-    value: `${dailyReadings.waterLitres} / ${dailyReadings.waterGoalLitres} L`,
-    icon: Droplet,
-    progress: dailyReadings.waterLitres / dailyReadings.waterGoalLitres,
-    caption: "900 ml to go",
-  },
-  {
-    id: "steps",
-    label: "Steps",
-    value: `${dailyReadings.steps.toLocaleString("en-US")} / ${dailyReadings.stepsGoal.toLocaleString("en-US")}`,
-    icon: Footprints,
-    progress: dailyReadings.steps / dailyReadings.stepsGoal,
-    caption: "1,580 steps from your goal",
-  },
-  {
-    id: "recovery",
-    label: "Recovery",
-    value: `${dailyReadings.recoveryPercent}%`,
-    icon: HeartPulse,
-    progress: dailyReadings.recoveryPercent / 100,
-    ring: true,
-    caption: "Ready for a heavy session",
-  },
-  {
-    id: "sleep",
-    label: "Sleep",
-    value: formatSleep(dailyReadings.sleepMinutes),
-    icon: Moon,
-    progress: dailyReadings.sleepMinutes / dailyReadings.sleepGoalMinutes,
-    caption: "18 min under your 8h target",
-  },
-];
+/**
+ * The dashboard's daily tiles.
+ *
+ * The four wellness figures come from the member's own `wellness_logs` row, so
+ * the dashboard and /wellness can never disagree about the same day. Streak
+ * and weekly workouts remain sample content until workout history feeds them.
+ */
+export function buildDailyMetrics(readings: DailyReadings): DailyMetric[] {
+  const pending = "Not logged yet";
+
+  return [
+    {
+      id: "streak",
+      label: "Workout Streak",
+      value: "12 Days",
+      icon: Flame,
+      caption: "Longest this year — keep it alive",
+    },
+    {
+      id: "weekly-workouts",
+      label: "Weekly Workouts",
+      value: "4 / 5",
+      icon: Dumbbell,
+      progress: 4 / 5,
+      caption: "One session left this week",
+    },
+    {
+      id: "water",
+      label: "Water",
+      value:
+        readings.waterLiters === null
+          ? `— / ${wellnessGoals.waterLiters} L`
+          : `${readings.waterLiters} / ${wellnessGoals.waterLiters} L`,
+      icon: Droplet,
+      progress:
+        readings.waterLiters === null
+          ? undefined
+          : readings.waterLiters / wellnessGoals.waterLiters,
+      caption: readings.waterLiters === null ? pending : "Logged on your wellness page",
+    },
+    {
+      id: "steps",
+      label: "Steps",
+      value:
+        readings.steps === null
+          ? `— / ${wellnessGoals.steps.toLocaleString("en-US")}`
+          : `${readings.steps.toLocaleString("en-US")} / ${wellnessGoals.steps.toLocaleString("en-US")}`,
+      icon: Footprints,
+      progress: readings.steps === null ? undefined : readings.steps / wellnessGoals.steps,
+      caption: readings.steps === null ? pending : "Logged on your wellness page",
+    },
+    {
+      id: "recovery",
+      label: "Recovery",
+      value: readings.recoveryScore === null ? "—" : `${readings.recoveryScore}%`,
+      icon: HeartPulse,
+      progress: readings.recoveryScore === null ? undefined : readings.recoveryScore / 100,
+      ring: true,
+      caption: readings.recoveryScore === null ? pending : "How recovered you rated yourself",
+    },
+    {
+      id: "sleep",
+      label: "Sleep",
+      value: formatSleep(readings.sleepHours),
+      icon: Moon,
+      progress:
+        readings.sleepHours === null
+          ? undefined
+          : readings.sleepHours / wellnessGoals.sleepHours,
+      caption: readings.sleepHours === null ? pending : `Against your ${wellnessGoals.sleepHours}h target`,
+    },
+  ];
+}
 
 export type HeadlineStat = {
   id: string;
