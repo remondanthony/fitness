@@ -1,4 +1,5 @@
 import Link from "next/link";
+import { Suspense } from "react";
 import type { Metadata } from "next";
 
 import { AuthCard } from "@/components/auth/AuthCard";
@@ -27,7 +28,9 @@ export default function RegisterPage() {
         </p>
       }
     >
-      <RegisterForm />
+      <Suspense fallback={null}>
+        <RegisterForm />
+      </Suspense>
     </AuthCard>
   );
 }
