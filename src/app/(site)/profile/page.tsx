@@ -54,12 +54,25 @@ export default async function ProfilePage() {
                 className="bg-accent-500/25 absolute -inset-3 -z-10 rounded-[2rem] blur-2xl"
                 aria-hidden="true"
               />
-              <ImagePlaceholder
-                variant="profile"
-                aspect="square"
-                alt={`Profile picture placeholder for ${displayName}`}
-                className="h-32 w-32 rounded-3xl sm:h-40 sm:w-40"
-              />
+              {view?.avatarUrl ? (
+                // Not next/image: a short-lived signed URL to a private object
+                // is not something the optimiser can usefully cache.
+                // eslint-disable-next-line @next/next/no-img-element
+                <img
+                  src={view.avatarUrl}
+                  alt={`Profile picture for ${displayName}`}
+                  width={160}
+                  height={160}
+                  className="border-chalk/12 h-32 w-32 rounded-3xl border object-cover sm:h-40 sm:w-40"
+                />
+              ) : (
+                <ImagePlaceholder
+                  variant="profile"
+                  aspect="square"
+                  alt={`Profile picture placeholder for ${displayName}`}
+                  className="h-32 w-32 rounded-3xl sm:h-40 sm:w-40"
+                />
+              )}
             </div>
 
             <div className="min-w-0 flex-1">

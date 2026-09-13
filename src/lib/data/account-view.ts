@@ -2,6 +2,7 @@ import { getCurrentGoals } from "@/lib/data/goals";
 import { getCurrentPreferences } from "@/lib/data/preferences";
 import { getCurrentProfile } from "@/lib/data/profiles";
 import { getPersonalization } from "@/lib/data/personalization";
+import { getAvatarSignedUrl } from "@/lib/data/avatars";
 import { toAnswers, type RequiredField } from "@/lib/personalization";
 import type { PreferenceValues } from "@/components/settings/PreferencesSettings";
 
@@ -23,6 +24,12 @@ export type AccountView = {
   email: string;
   /** True when the member has never saved a name. */
   usingFallbackName: boolean;
+  /**
+   * Short-lived link to the member's profile picture, or null when they have
+   * none — or when the stored reference no longer resolves to a file, which
+   * renders as the default avatar rather than as a broken image.
+   */
+  avatarUrl: string | null;
   /** Pre-formatted values for the profile page, or null when unset. */
   goalLabel: string | null;
   levelLabel: string | null;
@@ -69,6 +76,8 @@ export async function getAccountView(): Promise<AccountView | null> {
   const user = await getSessionUser();
   const email = user?.email ?? "";
 
+  const avatarUrl = await getAvatarSignedUrl(profile?.avatar_url);
+
   const savedName = profile?.display_name?.trim() ?? "";
   const metadataName = user?.displayName ?? "";
   const displayName = savedName || metadataName || email.split("@")[0] || "Your profile";
@@ -79,6 +88,7 @@ export async function getAccountView(): Promise<AccountView | null> {
     displayName,
     email,
     usingFallbackName: !savedName && !metadataName,
+    avatarUrl,
     goalLabel: label(goalOptions, goals.data?.primary_goal),
     levelLabel: label(levelOptions, profile?.experience_level),
     equipmentLabel: label(equipmentOptions, preferences.data?.equipment_access),

@@ -12,10 +12,15 @@ import type { TablesUpdate } from "@/types/database";
  * so these two layers agree.
  */
 
-/** Columns a member is allowed to change about themselves. */
+/**
+ * Columns a member is allowed to change about themselves.
+ *
+ * `avatar_url` holds a storage object path rather than a URL — the avatars
+ * bucket is private, so there is no durable URL to keep. See lib/data/avatars.
+ */
 export type ProfilePatch = Pick<
   TablesUpdate<"profiles">,
-  "display_name" | "first_name" | "last_name" | "bio" | "experience_level"
+  "display_name" | "first_name" | "last_name" | "bio" | "experience_level" | "avatar_url"
 >;
 
 /**

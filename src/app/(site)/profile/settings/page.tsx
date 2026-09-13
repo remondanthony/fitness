@@ -6,6 +6,7 @@ import { Breadcrumbs } from "@/components/ui/Breadcrumbs";
 import { Container } from "@/components/ui/Container";
 import { AccountSettings } from "@/components/settings/AccountSettings";
 import { getAccountView } from "@/lib/data/account-view";
+import { AvatarSettings } from "@/components/settings/AvatarSettings";
 import { PreferencesSettings } from "@/components/settings/PreferencesSettings";
 import { SettingsSection } from "@/components/settings/SettingsSection";
 import { ToggleGroup } from "@/components/settings/ToggleGroup";
@@ -89,6 +90,13 @@ export default async function SettingsPage() {
                 initialName={view?.displayName ?? ""}
                 email={view?.email ?? ""}
               />
+
+              <div className="border-chalk/8 mt-8 border-t pt-8">
+                <AvatarSettings
+                  initialUrl={view?.avatarUrl ?? null}
+                  displayName={view?.displayName ?? ""}
+                />
+              </div>
             </SettingsSection>
 
             <SettingsSection
