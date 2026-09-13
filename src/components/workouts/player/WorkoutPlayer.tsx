@@ -1,22 +1,69 @@
 "use client";
 
-import { ChevronLeft, ChevronRight, RotateCcw, X } from "lucide-react";
+import { AlertCircle, Check, ChevronLeft, ChevronRight, Loader2, RotateCcw, X } from "lucide-react";
 import Link from "next/link";
 
 import { cn } from "@/lib/cn";
 import { formatClock, padIndex } from "@/lib/format";
 import { useWorkoutSession } from "@/lib/useWorkoutSession";
+import { useWorkoutSync } from "@/components/workouts/player/useWorkoutSync";
+import type { RemoteSession } from "@/lib/data/workout-sessions";
 import { RestTimer } from "@/components/workouts/player/RestTimer";
 import { SetLogger } from "@/components/workouts/player/SetLogger";
 import { WorkoutComplete } from "@/components/workouts/player/WorkoutComplete";
 import type { Workout } from "@/data/workouts";
 
 /**
+ * Rebuilds local player state from a session stored in the database.
+ *
+ * Logs come back keyed by exercise slug; the player works in workout-local
+ * exercise ids, so they are mapped back and ordered by set number. The
+ * current exercise is the first one that still has sets outstanding.
+ */
+function remoteSeed(workout: Workout, remote: RemoteSession | null) {
+  if (!remote) return null;
+
+  const log: Record<string, { weight: number; reps: number }[]> = {};
+
+  for (const exercise of workout.exercises) {
+    const key = exercise.exerciseSlug ?? exercise.id;
+    const sets = remote.logs
+      .filter((entry) => entry.exercise_slug === key)
+      .sort((a, b) => a.set_number - b.set_number)
+      .map((entry) => ({ weight: Number(entry.weight ?? 0), reps: entry.reps }));
+
+    if (sets.length) log[exercise.id] = sets;
+  }
+
+  const firstUnfinished = workout.exercises.findIndex(
+    (exercise) => (log[exercise.id]?.length ?? 0) < exercise.sets,
+  );
+
+  return {
+    startedAt: new Date(remote.startedAt).getTime(),
+    currentIndex: firstUnfinished === -1 ? workout.exercises.length - 1 : firstUnfinished,
+    log,
+  };
+}
+
+/**
  * Orchestrates the three player states — logging a set, resting, and the
  * completion summary — on top of the persisted session in `useWorkoutSession`.
  */
-export function WorkoutPlayer({ workout }: { workout: Workout }) {
-  const session = useWorkoutSession(workout);
+export function WorkoutPlayer({
+  workout,
+  initialRemote = null,
+}: {
+  workout: Workout;
+  /** Any unfinished session already stored for this member and workout. */
+  initialRemote?: RemoteSession | null;
+}) {
+  const sync = useWorkoutSync(workout.slug, initialRemote);
+  const session = useWorkoutSession(workout, {
+    seed: remoteSeed(workout, initialRemote),
+    onSetLogged: sync.recordSet,
+    onCompleted: sync.recordCompletion,
+  });
   const {
     hydrated,
     currentIndex,
@@ -50,7 +97,10 @@ export function WorkoutPlayer({ workout }: { workout: Workout }) {
             exerciseCount={totals.exercisesTouched}
             setCount={totals.sets}
             volumeKg={totals.volume}
-            onRestart={session.restart}
+            onRestart={() => {
+              sync.reset();
+              session.restart();
+            }}
           />
         </div>
       </div>
@@ -78,14 +128,25 @@ export function WorkoutPlayer({ workout }: { workout: Workout }) {
             <p className="text-chalk truncate text-xs font-semibold tracking-[0.18em] uppercase">
               {workout.title}
             </p>
-            <p className="text-fog mt-0.5 text-[11px] font-semibold tabular-nums">
+            <p className="text-fog mt-0.5 flex items-center justify-center gap-1.5 text-[11px] font-semibold tabular-nums">
               {formatClock(elapsedSeconds)} · {completedTotal}/{plannedTotal} sets
+              {sync.saving ? (
+                <Loader2
+                  className="h-3 w-3 animate-spin"
+                  aria-label="Saving"
+                />
+              ) : sync.sessionId ? (
+                <Check className="text-accent-500/70 h-3 w-3" aria-label="Saved" />
+              ) : null}
             </p>
           </div>
 
           <button
             type="button"
-            onClick={session.restart}
+            onClick={() => {
+              sync.reset();
+              session.restart();
+            }}
             aria-label="Restart workout"
             className="border-chalk/12 bg-chalk/5 text-mist hover:border-chalk/30 hover:text-chalk inline-flex h-10 w-10 items-center justify-center rounded-xl border transition-colors"
           >
@@ -94,7 +155,26 @@ export function WorkoutPlayer({ workout }: { workout: Workout }) {
         </div>
 
         {/* Exercise progress */}
-        <div className="mx-auto flex w-full max-w-3xl gap-1 px-5 pb-4 sm:px-8">
+        {sync.saveError ? (
+          <div className="mx-auto w-full max-w-3xl px-5 pb-3 sm:px-8">
+            <p
+              role="alert"
+              className="flex items-start gap-2.5 rounded-xl border border-red-500/30 bg-red-500/10 px-3.5 py-2.5 text-xs leading-relaxed text-red-300"
+            >
+              <AlertCircle className="mt-0.5 h-3.5 w-3.5 shrink-0" aria-hidden="true" />
+              <span className="flex-1">{sync.saveError} Your progress is still on this device.</span>
+              <button
+                type="button"
+                onClick={sync.dismissError}
+                className="text-red-300/70 hover:text-red-200 shrink-0 font-semibold"
+              >
+                Dismiss
+              </button>
+            </p>
+          </div>
+        ) : null}
+
+      <div className="mx-auto flex w-full max-w-3xl gap-1 px-5 pb-4 sm:px-8">
           {exercises.map((exercise, index) => {
             const done = setsFor(exercise.id).length >= exercise.sets;
             return (

@@ -1,6 +1,13 @@
 "use client";
 
-import { useCallback, useEffect, useMemo, useState, useSyncExternalStore } from "react";
+import {
+  useCallback,
+  useEffect,
+  useMemo,
+  useRef,
+  useState,
+  useSyncExternalStore,
+} from "react";
 
 import {
   getClock,
@@ -53,8 +60,38 @@ type RestState = {
  * off and the server render has a defined (empty) snapshot. Rest and the clock
  * are deliberately ephemeral — resuming into a stale countdown would be wrong.
  */
-export function useWorkoutSession(workout: Workout) {
+export type SessionSeed = {
+  startedAt: number;
+  currentIndex: number;
+  log: SessionLog;
+};
+
+export type SessionCallbacks = {
+  /** Rebuilds local state from a persisted session when none exists locally. */
+  seed?: SessionSeed | null;
+  /** Fired after a set is recorded locally, so it can be persisted. */
+  onSetLogged?: (entry: {
+    exerciseId: string;
+    setNumber: number;
+    weight: number;
+    reps: number;
+  }) => void;
+  /** Fired once when the final set closes the workout. */
+  onCompleted?: (totals: { durationSeconds: number; totalVolume: number }) => void;
+};
+
+export function useWorkoutSession(
+  workout: Workout,
+  callbacks: SessionCallbacks = {},
+) {
   const { slug } = workout;
+
+  // Held in a ref so changing handler identity never re-runs the tick effect.
+  // Written in an effect rather than during render, which React forbids.
+  const callbacksRef = useRef(callbacks);
+  useEffect(() => {
+    callbacksRef.current = callbacks;
+  });
 
   const raw = useSyncExternalStore(
     subscribe,
@@ -71,7 +108,7 @@ export function useWorkoutSession(workout: Workout) {
   // Start a session on first visit. This writes to the store rather than to
   // component state, so React re-renders through the subscription above.
   useEffect(() => {
-    ensureSession(slug);
+    ensureSession(slug, callbacksRef.current.seed ?? null);
   }, [slug]);
 
   const running = Boolean(session) && !session?.finishedAt;
@@ -118,7 +155,16 @@ export function useWorkoutSession(workout: Workout) {
   const finish = useCallback(() => {
     setRest(null);
     const latest = parseSession(getSnapshot(slug), slug);
-    if (latest) saveSession({ ...latest, finishedAt: latest.finishedAt ?? Date.now() });
+    if (!latest || latest.finishedAt) return;
+
+    const finishedAt = Date.now();
+    saveSession({ ...latest, finishedAt });
+
+    const entries = Object.values(latest.log).flat();
+    callbacksRef.current.onCompleted?.({
+      durationSeconds: Math.max(0, Math.floor((finishedAt - latest.startedAt) / 1000)),
+      totalVolume: entries.reduce((sum, e) => sum + e.weight * e.reps, 0),
+    });
   }, [slug]);
 
   const goTo = useCallback(
@@ -164,7 +210,25 @@ export function useWorkoutSession(workout: Workout) {
         finishedAt: workoutDone ? Date.now() : latest.finishedAt,
       });
 
+      callbacksRef.current.onSetLogged?.({
+        exerciseId: exercise.id,
+        setNumber: logged.length,
+        weight,
+        reps,
+      });
+
       if (workoutDone) {
+        const entries = Object.values({
+          ...latest.log,
+          [exercise.id]: logged,
+        }).flat();
+        callbacksRef.current.onCompleted?.({
+          durationSeconds: Math.max(
+            0,
+            Math.floor((Date.now() - latest.startedAt) / 1000),
+          ),
+          totalVolume: entries.reduce((sum, e) => sum + e.weight * e.reps, 0),
+        });
         setRest(null);
         return;
       }

@@ -1,4 +1,4 @@
-import type { WorkoutSession } from "@/lib/useWorkoutSession";
+import type { SessionLog, WorkoutSession } from "@/lib/useWorkoutSession";
 
 /**
  * Tiny external store over localStorage, so React can subscribe to the
@@ -72,9 +72,21 @@ export function saveSession(session: WorkoutSession) {
   emit();
 }
 
-/** Creates and stores a session only when one is not already saved. */
-export function ensureSession(slug: string) {
-  if (!parseSession(getSnapshot(slug), slug)) saveSession(createSession(slug));
+/**
+ * Creates and stores a session only when one is not already saved.
+ *
+ * `seed` rebuilds local state from a session persisted in the database, so a
+ * refresh — or picking the workout back up on another device — resumes where
+ * the member left off rather than starting from zero.
+ */
+export function ensureSession(
+  slug: string,
+  seed?: { startedAt: number; currentIndex: number; log: SessionLog } | null,
+) {
+  if (parseSession(getSnapshot(slug), slug)) return;
+
+  const session = createSession(slug);
+  saveSession(seed ? { ...session, ...seed } : session);
 }
 
 export function resetSession(slug: string) {

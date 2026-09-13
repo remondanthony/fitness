@@ -3,6 +3,7 @@ import type { Metadata } from "next";
 
 import { WorkoutPlayer } from "@/components/workouts/player/WorkoutPlayer";
 import { getWorkout, workouts } from "@/data/workouts";
+import { getOpenSession } from "@/lib/data/workout-sessions";
 
 export function generateStaticParams() {
   return workouts.map((workout) => ({ slug: workout.slug }));
@@ -28,5 +29,9 @@ export default async function WorkoutPlayerPage({
 
   if (!workout) notFound();
 
-  return <WorkoutPlayer workout={workout} />;
+  // Resolved on the server so a refresh mid-workout restores immediately,
+  // with no client round trip and no risk of opening a second session.
+  const { data: openSession } = await getOpenSession(slug);
+
+  return <WorkoutPlayer workout={workout} initialRemote={openSession} />;
 }

@@ -10,11 +10,14 @@ import { PageHero } from "@/components/ui/PageHero";
 import { SectionHeading } from "@/components/ui/SectionHeading";
 import { WorkoutCard } from "@/components/workouts/WorkoutCard";
 import {
+  getWorkout,
   recentWorkouts,
   recommendedWorkouts,
   todaysWorkout,
   totalSets,
+  type Workout,
 } from "@/data/workouts";
+import { getCompletedSessions } from "@/lib/data/workout-sessions";
 
 export const metadata: Metadata = {
   title: "Workouts",
@@ -22,7 +25,47 @@ export const metadata: Metadata = {
     "Your session for today, what you have trained recently and what to do next.",
 };
 
-export default function WorkoutsPage() {
+/** Turns a stored session into the shape the existing recent card renders. */
+function toRecentCard(session: {
+  workoutSlug: string;
+  completedAt: string;
+  durationSeconds: number | null;
+  totalVolume: number | null;
+  setCount: number;
+}): Workout | null {
+  const workout = getWorkout(session.workoutSlug);
+  if (!workout) return null;
+
+  return {
+    ...workout,
+    lastCompleted: {
+      date: relativeDay(session.completedAt),
+      minutes: Math.max(1, Math.round((session.durationSeconds ?? 0) / 60)),
+      volumeKg: Math.round(session.totalVolume ?? 0),
+      sets: session.setCount,
+    },
+  };
+}
+
+/** "Today", "Yesterday", "3 days ago" — matching the existing card copy. */
+function relativeDay(iso: string): string {
+  const days = Math.floor((Date.now() - new Date(iso).getTime()) / 86_400_000);
+  if (days <= 0) return "Today";
+  if (days === 1) return "Yesterday";
+  if (days < 7) return `${days} days ago`;
+  if (days < 14) return "Last week";
+  return `${Math.floor(days / 7)} weeks ago`;
+}
+
+export default async function WorkoutsPage() {
+  // Real history when the member has trained; the sample shelf until then.
+  const { data: completed } = await getCompletedSessions(3);
+  const realHistory = completed
+    .map(toRecentCard)
+    .filter((entry): entry is Workout => entry !== null);
+  const historyIsReal = realHistory.length > 0;
+  const history = historyIsReal ? realHistory : recentWorkouts;
+
   return (
     <>
       <PageHero
@@ -144,12 +187,16 @@ export default function WorkoutsPage() {
                 Recent Workouts
               </span>
             }
-            description="What you have trained over the last week."
+            description={
+              historyIsReal
+                ? "Your completed sessions, newest first."
+                : "Sample sessions — your own appear here once you finish a workout."
+            }
           />
 
           <ul className="mt-12 grid gap-6 md:grid-cols-2 lg:grid-cols-3">
-            {recentWorkouts.map((workout, index) => (
-              <li key={workout.slug}>
+            {history.map((workout, index) => (
+              <li key={`${workout.slug}-${index}`}>
                 <WorkoutCard workout={workout} variant="recent" index={index} />
               </li>
             ))}
