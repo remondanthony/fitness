@@ -7,10 +7,12 @@ import { Button } from "@/components/ui/Button";
 import { Card } from "@/components/ui/Card";
 import { Container } from "@/components/ui/Container";
 import { StatCard } from "@/components/ui/StatCard";
+import { RecommendedShelf } from "@/components/dashboard/RecommendedShelf";
 import { TodayWorkoutCard } from "@/components/dashboard/TodayWorkoutCard";
 import { getAccountView } from "@/lib/data/account-view";
 import { currentLogDate } from "@/lib/data/daily-date";
 import { getPersonalization } from "@/lib/data/personalization";
+import { getRecommendations } from "@/lib/data/recommendations";
 import {
   equipmentOptions,
   goalOptions,
@@ -30,10 +32,11 @@ export default async function DashboardPage() {
   // Protected route, so a member is always present.
   // getAccountView and getPersonalization read the same three cached queries,
   // so asking for both costs one round trip each, not two.
-  const [view, wellness, personalization] = await Promise.all([
+  const [view, wellness, personalization, recommendations] = await Promise.all([
     getAccountView(),
     getWellnessLog(currentLogDate()),
     getPersonalization(),
+    getRecommendations(),
   ]);
 
   // A member who has not answered the personalization questions is sent to
@@ -191,6 +194,13 @@ export default async function DashboardPage() {
           </div>
         </Container>
       </section>
+
+      {/* Recommended */}
+      {recommendations ? (
+        <div className="mt-12 lg:mt-16">
+          <RecommendedShelf recommendations={recommendations} />
+        </div>
+      ) : null}
 
       {/* Daily metrics */}
       <section className="py-12 lg:py-16">

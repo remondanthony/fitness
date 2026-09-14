@@ -6,6 +6,10 @@
     "skipLibCheck": true,
     "strict": true,
     "noEmit": true,
+    // Lets the equipment tests use the ".ts" specifiers that Node's
+    // built-in test runner requires. Permitted because noEmit is set; it
+    // only widens what an import path may say, and emits nothing.
+    "allowImportingTsExtensions": true,
     "esModuleInterop": true,
     "module": "esnext",
     "moduleResolution": "bundler",
