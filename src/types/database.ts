@@ -43,6 +43,9 @@ export type TrainingLocation = "home" | "gym" | "outdoors" | "hybrid";
 /** Values accepted by user_preferences.units. */
 export type Units = "metric" | "imperial";
 
+/** Values accepted by user_memberships.tier. */
+export type MembershipTier = "free" | "pro" | "elite";
+
 /** Values accepted by habits.frequency. */
 export type HabitFrequency = "daily" | "weekdays" | "weekly" | "custom";
 
@@ -129,6 +132,30 @@ export type Database = {
         Relationships: [];
       };
 
+      user_memberships: {
+        Row: {
+          user_id: string;
+          tier: MembershipTier;
+          source: string | null;
+          created_at: string;
+          updated_at: string;
+        };
+        Insert: {
+          user_id: string;
+          tier?: MembershipTier;
+          source?: string | null;
+          created_at?: string;
+          updated_at?: string;
+        };
+        Update: {
+          user_id?: string;
+          tier?: MembershipTier;
+          source?: string | null;
+          created_at?: string;
+          updated_at?: string;
+        };
+        Relationships: [];
+      };
       user_preferences: {
         Row: {
           id: string;

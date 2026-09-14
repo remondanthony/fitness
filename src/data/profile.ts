@@ -4,6 +4,7 @@ import {
   Dumbbell,
   Lock,
   Settings2,
+  ShieldCheck,
   Target,
   User,
   type LucideIcon,
@@ -17,15 +18,11 @@ import {
  * Part 12 replaces them with the member's own records.
  */
 export type Profile = {
-  /** Membership tier. Not yet persisted — arrives with billing. */
-  plan: string;
-  /** Current goal, matching the goals offered on the homepage. */
   /** Slug of the program they are currently running. */
   currentProgramSlug: string;
 };
 
 export const profile: Profile = {
-  plan: "Pro",
   currentProgramSlug: "power-build",
 };
 
@@ -61,7 +58,12 @@ export const profileDetailMeta = {
 // Settings
 // ---------------------------------------------------------------------------
 
-export type SettingsSectionId = "account" | "preferences" | "notifications" | "privacy";
+export type SettingsSectionId =
+  | "account"
+  | "membership"
+  | "preferences"
+  | "notifications"
+  | "privacy";
 
 export const settingsSections: {
   id: SettingsSectionId;
@@ -74,6 +76,12 @@ export const settingsSections: {
     label: "Account",
     description: "Your name, email and password.",
     icon: User,
+  },
+  {
+    id: "membership",
+    label: "Membership",
+    description: "Your current plan and what it includes.",
+    icon: ShieldCheck,
   },
   {
     id: "preferences",

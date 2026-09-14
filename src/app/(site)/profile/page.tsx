@@ -10,6 +10,8 @@ import { ImagePlaceholder } from "@/components/ui/ImagePlaceholder";
 import { SectionHeading } from "@/components/ui/SectionHeading";
 import { ProgramCard } from "@/components/programs/ProgramCard";
 import { getAccountView } from "@/lib/data/account-view";
+import { getMembership } from "@/lib/data/membership";
+import { tierLabel } from "@/lib/membership/tiers";
 import { profile, profileDetailMeta } from "@/data/profile";
 import { getProgram } from "@/data/programs";
 import { progressStats } from "@/data/progress";
@@ -21,7 +23,7 @@ export const metadata: Metadata = {
 
 export default async function ProfilePage() {
   // The route is protected, so a member is always present here.
-  const view = await getAccountView();
+  const [view, membership] = await Promise.all([getAccountView(), getMembership()]);
   const currentProgram = getProgram(profile.currentProgramSlug);
 
   const email = view?.email ?? "";
@@ -79,7 +81,7 @@ export default async function ProfilePage() {
               <div className="flex flex-wrap items-center gap-2">
                 <Badge variant="accent" className="gap-1.5">
                   <ShieldCheck className="h-3 w-3" aria-hidden="true" />
-                  {profile.plan} member
+                  {tierLabel(membership.tier)} member
                 </Badge>
                 <Badge variant="outline" className="gap-1.5">
                   <CalendarDays className="h-3 w-3" aria-hidden="true" />

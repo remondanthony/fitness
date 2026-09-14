@@ -7,6 +7,7 @@ import { Dialog } from "@/components/ui/Dialog";
 import { SelectField } from "@/components/ui/SelectField";
 import { TextField } from "@/components/ui/TextField";
 import { useToast } from "@/components/ui/Toast";
+import { requestConsultationAction } from "@/lib/actions/coaching";
 import { cn } from "@/lib/cn";
 
 const slots = [
@@ -31,6 +32,11 @@ type ConsultationButtonProps = {
 /**
  * Opens the consultation request placeholder. The form is complete and
  * validated, but booking is not connected — the dialog says so plainly.
+ *
+ * Submitting goes through a Server Action that checks the Elite entitlement
+ * before anything else. The page only renders this button for a member who
+ * already has it, so the server check is the backstop rather than the usual
+ * path: it is what answers a request that did not come from this button.
  */
 export function ConsultationButton({
   coachName,
@@ -44,20 +50,35 @@ export function ConsultationButton({
   const [error, setError] = useState<string>();
   const { notify } = useToast();
 
-  function handleSubmit(event: React.FormEvent<HTMLFormElement>) {
-    event.preventDefault();
+  const [pending, setPending] = useState(false);
 
-    if (!/^[^\s@]+@[^\s@]+\.[^\s@]{2,}$/.test(email.trim())) {
-      setError("Enter a valid email address");
+  async function handleSubmit(event: React.FormEvent<HTMLFormElement>) {
+    event.preventDefault();
+    if (pending) return;
+
+    setError(undefined);
+    setPending(true);
+
+    const result = await requestConsultationAction({ coachName, email });
+
+    setPending(false);
+
+    if (result.status === "error") {
+      setError(result.message);
       return;
     }
 
-    setError(undefined);
+    if (result.status === "locked") {
+      setOpen(false);
+      notify({ tone: "info", title: "Elite membership required", description: result.message });
+      return;
+    }
+
     setOpen(false);
     notify({
       tone: "info",
       title: "Booking isn't live yet",
-      description: `Consultations with ${coachName} open when scheduling is connected. Nothing was sent.`,
+      description: result.message,
     });
   }
 
@@ -117,7 +138,8 @@ export function ConsultationButton({
           <div className="flex flex-col gap-3 sm:flex-row-reverse">
             <button
               type="submit"
-              className="bg-accent-500 hover:bg-accent-400 shadow-glow inline-flex h-12 flex-1 items-center justify-center rounded-xl text-sm font-semibold text-white transition-colors"
+              disabled={pending}
+              className="bg-accent-500 hover:bg-accent-400 shadow-glow inline-flex h-12 flex-1 items-center justify-center rounded-xl text-sm font-semibold text-white transition-colors disabled:pointer-events-none disabled:opacity-60"
             >
               Request Consultation
             </button>
