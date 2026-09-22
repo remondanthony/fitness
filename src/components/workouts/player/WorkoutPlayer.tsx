@@ -236,7 +236,9 @@ export function WorkoutPlayer({
                     Previous
                   </span>
                   <span className="text-chalk ml-3 text-sm font-semibold">
-                    {currentExercise.previous.weight} kg × {currentExercise.previous.reps}
+                    {currentExercise.previous.weight === null
+                      ? `${currentExercise.previous.reps} reps`
+                      : `${currentExercise.previous.weight} kg × ${currentExercise.previous.reps}`}
                   </span>
                 </p>
               ) : null}

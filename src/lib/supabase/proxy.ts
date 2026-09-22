@@ -10,7 +10,15 @@ import {
 import type { Database } from "@/types/database";
 
 /** Routes that require a signed-in member. Prefix match. */
-const PROTECTED_PREFIXES = ["/dashboard", "/progress", "/profile", "/onboarding"];
+const PROTECTED_PREFIXES = [
+  "/dashboard",
+  "/progress",
+  "/profile",
+  "/onboarding",
+  // Someone's own training history. The rest of /workouts is the public
+  // catalogue, so this is listed by its full path rather than the prefix.
+  "/workouts/history",
+];
 
 /** Signed-in members are bounced away from these. */
 const AUTH_ONLY_PREFIXES = ["/login", "/register", "/forgot-password"];
@@ -19,8 +27,14 @@ function isProtected(pathname: string): boolean {
   if (PROTECTED_PREFIXES.some((p) => pathname === p || pathname.startsWith(`${p}/`))) {
     return true;
   }
-  // The workout player needs an account; the catalogue pages stay public.
-  return /^\/workouts\/[^/]+\/start\/?$/.test(pathname);
+  // Two sub-routes of otherwise public catalogue sections need an account:
+  // the workout player, and a member's own logged history for one exercise.
+  // Listed as patterns rather than prefixes so /workouts and /exercises
+  // themselves stay public.
+  return (
+    /^\/workouts\/[^/]+\/start\/?$/.test(pathname) ||
+    /^\/exercises\/[^/]+\/history\/?$/.test(pathname)
+  );
 }
 
 /**

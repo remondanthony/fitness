@@ -91,6 +91,9 @@ export function SetLogger({
   // The player remounts this component per exercise (keyed by exercise id), so
   // the initial values always come from that exercise's previous performance.
   const targetReps = Number.parseInt(exercise.reps, 10);
+  // `previous.weight` of null means last time's load was never recorded, so
+  // there is nothing to offer and the input starts at its own default. These
+  // are starting values only — nothing is stored until a set is logged.
   const [weight, setWeight] = useState(exercise.previous?.weight ?? 0);
   const [reps, setReps] = useState(
     exercise.previous?.reps ?? (Number.isFinite(targetReps) ? targetReps : 10),

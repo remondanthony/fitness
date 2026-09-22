@@ -14,8 +14,16 @@ export type WorkoutExercise = {
   /** Target reps for each set, e.g. "8" or "12". */
   reps: string;
   restSeconds: number;
-  /** What the member lifted last time, used to prefill the set logger. */
-  previous?: { weight: number; reps: number };
+  /**
+   * What the member lifted last time, used to prefill the set logger.
+   *
+   * Never set in this file. It is attached at request time from the member's
+   * own completed session when they repeat a workout, so a catalogue entry
+   * carries no claim about anybody's training. `weight` is null when that set
+   * recorded no load — never rewritten to 0, which would claim a bodyweight
+   * set that did not happen.
+   */
+  previous?: { weight: number | null; reps: number };
   note?: string;
 };
 
@@ -41,7 +49,10 @@ export type Workout = {
   equipmentLabel: string;
   artwork: ImagePlaceholderVariant;
   exercises: WorkoutExercise[];
-  /** Present when this workout has already been trained. */
+  /**
+   * Present when this workout has already been trained. Never set in this
+   * file: the history page attaches it from the member's own sessions.
+   */
   lastCompleted?: CompletedSession;
 };
 
@@ -74,7 +85,6 @@ export const workouts: Workout[] = [
         sets: 4,
         reps: "8",
         restSeconds: 90,
-        previous: { weight: 75, reps: 8 },
         note: "Top set at RPE 8, then hold the load for the remaining three.",
       },
       {
@@ -84,7 +94,6 @@ export const workouts: Workout[] = [
         sets: 3,
         reps: "10",
         restSeconds: 75,
-        previous: { weight: 28, reps: 10 },
       },
       {
         id: "ex-3",
@@ -93,7 +102,6 @@ export const workouts: Workout[] = [
         sets: 3,
         reps: "10",
         restSeconds: 75,
-        previous: { weight: 60, reps: 10 },
       },
       {
         id: "ex-4",
@@ -102,7 +110,6 @@ export const workouts: Workout[] = [
         sets: 3,
         reps: "8",
         restSeconds: 75,
-        previous: { weight: 24, reps: 8 },
       },
       {
         id: "ex-5",
@@ -111,7 +118,6 @@ export const workouts: Workout[] = [
         sets: 3,
         reps: "12",
         restSeconds: 60,
-        previous: { weight: 15, reps: 12 },
       },
       {
         id: "ex-6",
@@ -120,7 +126,6 @@ export const workouts: Workout[] = [
         sets: 3,
         reps: "12",
         restSeconds: 60,
-        previous: { weight: 25, reps: 12 },
       },
     ],
   },
@@ -144,7 +149,6 @@ export const workouts: Workout[] = [
         sets: 5,
         reps: "5",
         restSeconds: 150,
-        previous: { weight: 100, reps: 5 },
       },
       {
         id: "ex-2",
@@ -153,7 +157,6 @@ export const workouts: Workout[] = [
         sets: 4,
         reps: "8",
         restSeconds: 120,
-        previous: { weight: 80, reps: 8 },
       },
       {
         id: "ex-3",
@@ -162,7 +165,6 @@ export const workouts: Workout[] = [
         sets: 3,
         reps: "12",
         restSeconds: 90,
-        previous: { weight: 140, reps: 12 },
       },
       {
         id: "ex-4",
@@ -171,7 +173,6 @@ export const workouts: Workout[] = [
         sets: 3,
         reps: "10",
         restSeconds: 90,
-        previous: { weight: 90, reps: 10 },
       },
       {
         id: "ex-5",
@@ -180,11 +181,9 @@ export const workouts: Workout[] = [
         sets: 3,
         reps: "12",
         restSeconds: 60,
-        previous: { weight: 0, reps: 12 },
         note: "Bodyweight — log 0 kg unless you add a dumbbell between your feet.",
       },
     ],
-    lastCompleted: { date: "3 days ago", minutes: 47, volumeKg: 8460, sets: 18 },
   },
   {
     slug: "full-body-conditioning",
@@ -206,7 +205,6 @@ export const workouts: Workout[] = [
         sets: 4,
         reps: "20",
         restSeconds: 45,
-        previous: { weight: 24, reps: 20 },
       },
       {
         id: "ex-2",
@@ -215,7 +213,6 @@ export const workouts: Workout[] = [
         sets: 4,
         reps: "15",
         restSeconds: 45,
-        previous: { weight: 22, reps: 15 },
       },
       {
         id: "ex-3",
@@ -224,7 +221,6 @@ export const workouts: Workout[] = [
         sets: 4,
         reps: "12",
         restSeconds: 45,
-        previous: { weight: 0, reps: 12 },
       },
       {
         id: "ex-4",
@@ -233,7 +229,6 @@ export const workouts: Workout[] = [
         sets: 3,
         reps: "45s",
         restSeconds: 45,
-        previous: { weight: 0, reps: 45 },
         note: "Log seconds held in the reps field.",
       },
     ],
@@ -257,7 +252,6 @@ export const workouts: Workout[] = [
         sets: 4,
         reps: "6",
         restSeconds: 120,
-        previous: { weight: 10, reps: 6 },
         note: "Weight logged is the load added on the belt.",
       },
       {
@@ -267,7 +261,6 @@ export const workouts: Workout[] = [
         sets: 4,
         reps: "8",
         restSeconds: 90,
-        previous: { weight: 70, reps: 8 },
       },
       {
         id: "ex-3",
@@ -276,7 +269,6 @@ export const workouts: Workout[] = [
         sets: 3,
         reps: "12",
         restSeconds: 75,
-        previous: { weight: 55, reps: 12 },
       },
       {
         id: "ex-4",
@@ -285,10 +277,8 @@ export const workouts: Workout[] = [
         sets: 3,
         reps: "12",
         restSeconds: 60,
-        previous: { weight: 14, reps: 12 },
       },
     ],
-    lastCompleted: { date: "Last week", minutes: 39, volumeKg: 6120, sets: 14 },
   },
   {
     slug: "push-day-volume",
@@ -309,7 +299,6 @@ export const workouts: Workout[] = [
         sets: 4,
         reps: "10",
         restSeconds: 90,
-        previous: { weight: 26, reps: 10 },
       },
       {
         id: "ex-2",
@@ -318,7 +307,6 @@ export const workouts: Workout[] = [
         sets: 3,
         reps: "10",
         restSeconds: 75,
-        previous: { weight: 22, reps: 10 },
       },
       {
         id: "ex-3",
@@ -327,7 +315,6 @@ export const workouts: Workout[] = [
         sets: 3,
         reps: "15",
         restSeconds: 60,
-        previous: { weight: 12, reps: 15 },
       },
       {
         id: "ex-4",
@@ -336,7 +323,6 @@ export const workouts: Workout[] = [
         sets: 3,
         reps: "15",
         restSeconds: 60,
-        previous: { weight: 22, reps: 15 },
       },
     ],
   },
@@ -359,7 +345,6 @@ export const workouts: Workout[] = [
         sets: 3,
         reps: "45s",
         restSeconds: 45,
-        previous: { weight: 0, reps: 45 },
       },
       {
         id: "ex-2",
@@ -368,7 +353,6 @@ export const workouts: Workout[] = [
         sets: 3,
         reps: "10",
         restSeconds: 60,
-        previous: { weight: 0, reps: 10 },
       },
       {
         id: "ex-3",
@@ -377,11 +361,9 @@ export const workouts: Workout[] = [
         sets: 2,
         reps: "15",
         restSeconds: 45,
-        previous: { weight: 16, reps: 15 },
         note: "Slow and deep — this is mobility work, not a strength set.",
       },
     ],
-    lastCompleted: { date: "Yesterday", minutes: 18, volumeKg: 480, sets: 8 },
   },
   {
     slug: "shoulders-and-arms",
@@ -402,7 +384,6 @@ export const workouts: Workout[] = [
         sets: 4,
         reps: "10",
         restSeconds: 75,
-        previous: { weight: 20, reps: 10 },
       },
       {
         id: "ex-2",
@@ -411,7 +392,6 @@ export const workouts: Workout[] = [
         sets: 4,
         reps: "15",
         restSeconds: 45,
-        previous: { weight: 9, reps: 15 },
       },
       {
         id: "ex-3",
@@ -420,7 +400,6 @@ export const workouts: Workout[] = [
         sets: 3,
         reps: "12",
         restSeconds: 60,
-        previous: { weight: 14, reps: 12 },
       },
       {
         id: "ex-4",
@@ -429,7 +408,6 @@ export const workouts: Workout[] = [
         sets: 3,
         reps: "15",
         restSeconds: 60,
-        previous: { weight: 22, reps: 15 },
       },
       {
         id: "ex-5",
@@ -438,7 +416,6 @@ export const workouts: Workout[] = [
         sets: 2,
         reps: "15",
         restSeconds: 45,
-        previous: { weight: 0, reps: 15 },
         note: "Finisher — stop two reps short of failure.",
       },
     ],
@@ -455,15 +432,6 @@ export function getWorkout(slug: string): Workout | undefined {
 export const todaysWorkout = workouts.find(
   (workout) => workout.slug === todaysWorkoutSlug,
 )!;
-
-/** Sessions already trained, most recent first. */
-export const recentWorkouts = [
-  "core-and-mobility",
-  "lower-body-strength",
-  "pull-day-volume",
-]
-  .map(getWorkout)
-  .filter((workout): workout is Workout => Boolean(workout));
 
 /** Sessions suggested next. */
 export const recommendedWorkouts = [

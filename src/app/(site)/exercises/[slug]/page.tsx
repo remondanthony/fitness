@@ -1,10 +1,11 @@
-import { AlertTriangle, ArrowUpRight, Lightbulb, Target } from "lucide-react";
+import { AlertTriangle, ArrowUpRight, History, Lightbulb, Target } from "lucide-react";
 import Link from "next/link";
 import { notFound } from "next/navigation";
 import type { Metadata } from "next";
 
 import { Badge } from "@/components/ui/Badge";
 import { Breadcrumbs } from "@/components/ui/Breadcrumbs";
+import { Button } from "@/components/ui/Button";
 import { Card } from "@/components/ui/Card";
 import { Container } from "@/components/ui/Container";
 import { ImagePlaceholder } from "@/components/ui/ImagePlaceholder";
@@ -69,6 +70,15 @@ export default async function ExerciseDetailPage({
               <p className="text-mist mt-6 max-w-xl text-base leading-relaxed sm:text-lg">
                 {exercise.summary}
               </p>
+
+              {/* Their own logged sets for this movement. Signed-out visitors
+                  are sent to sign in by the proxy rather than being hidden it. */}
+              <div className="mt-9">
+                <Button href={`/exercises/${exercise.slug}/history`} variant="secondary">
+                  <History className="h-4 w-4" aria-hidden="true" />
+                  Your History
+                </Button>
+              </div>
 
               <dl className="border-chalk/8 mt-9 grid gap-6 border-t pt-8 sm:grid-cols-2">
                 <div>

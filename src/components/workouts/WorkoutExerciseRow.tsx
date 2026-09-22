@@ -56,7 +56,10 @@ export function WorkoutExerciseRow({
             </span>
             {exercise.previous ? (
               <span>
-                Last: {exercise.previous.weight} kg × {exercise.previous.reps}
+                Last:{" "}
+                {exercise.previous.weight === null
+                  ? `${exercise.previous.reps} reps`
+                  : `${exercise.previous.weight} kg × ${exercise.previous.reps}`}
               </span>
             ) : null}
           </p>

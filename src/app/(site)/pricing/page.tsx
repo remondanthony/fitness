@@ -51,7 +51,9 @@ export default function PricingPage() {
           <p className="text-fog mx-auto mt-10 flex max-w-md items-start justify-center gap-2.5 text-center text-xs leading-relaxed">
             <Info className="mt-0.5 h-3.5 w-3.5 shrink-0" aria-hidden="true" />
             <span>
-              Checkout is not connected yet — the plan buttons above are placeholders.
+              STRONGER is a portfolio demo. These plans illustrate how pricing
+              would be presented; no payment is taken, nothing is charged, and
+              every feature is available to try.
             </span>
           </p>
         </Container>

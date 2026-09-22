@@ -37,10 +37,16 @@ export function PersonalRecordCard({ record }: { record: PersonalRecord }) {
       </p>
 
       <div className="border-chalk/8 mt-6 flex items-center justify-between gap-3 border-t pt-4">
-        <span className="text-accent-400 inline-flex items-center gap-1.5 text-xs font-semibold">
-          <TrendingUp className="h-3.5 w-3.5" aria-hidden="true" />
-          {record.delta}
-        </span>
+        {/* Only shown when an earlier best genuinely stood before this one.
+            A first-ever record has nothing to have improved on. */}
+        {record.delta ? (
+          <span className="text-accent-400 inline-flex items-center gap-1.5 text-xs font-semibold">
+            <TrendingUp className="h-3.5 w-3.5" aria-hidden="true" />
+            {record.delta}
+          </span>
+        ) : (
+          <span className="text-fog text-xs font-semibold">First record</span>
+        )}
         <span className="text-fog text-[10px] font-semibold tracking-[0.14em] uppercase">
           {record.achieved}
         </span>

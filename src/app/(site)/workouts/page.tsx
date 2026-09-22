@@ -9,15 +9,15 @@ import { ImagePlaceholder } from "@/components/ui/ImagePlaceholder";
 import { PageHero } from "@/components/ui/PageHero";
 import { SectionHeading } from "@/components/ui/SectionHeading";
 import { WorkoutCard } from "@/components/workouts/WorkoutCard";
+import { EmptyState } from "@/components/ui/EmptyState";
 import {
   getWorkout,
-  recentWorkouts,
   recommendedWorkouts,
   todaysWorkout,
   totalSets,
   type Workout,
 } from "@/data/workouts";
-import { getCompletedSessions } from "@/lib/data/workout-sessions";
+import { getCompletedSessionHistory } from "@/lib/data/progress-analytics";
 
 export const metadata: Metadata = {
   title: "Workouts",
@@ -25,13 +25,21 @@ export const metadata: Metadata = {
     "Your session for today, what you have trained recently and what to do next.",
 };
 
-/** Turns a stored session into the shape the existing recent card renders. */
+/**
+ * Turns a stored session into the shape the existing recent card renders.
+ *
+ * `volume` arrives already recomputed from the member's own sets. The stored
+ * `workout_sessions.total_volume` column is written by the browser at the end
+ * of a session and has never been reconciled against those sets, so it is not
+ * read here or anywhere else in the history representation.
+ */
 function toRecentCard(session: {
   workoutSlug: string;
   completedAt: string;
   durationSeconds: number | null;
-  totalVolume: number | null;
-  setCount: number;
+  volume: number;
+  countedSets: number;
+  excludedSets: number;
 }): Workout | null {
   const workout = getWorkout(session.workoutSlug);
   if (!workout) return null;
@@ -41,8 +49,10 @@ function toRecentCard(session: {
     lastCompleted: {
       date: relativeDay(session.completedAt),
       minutes: Math.max(1, Math.round((session.durationSeconds ?? 0) / 60)),
-      volumeKg: Math.round(session.totalVolume ?? 0),
-      sets: session.setCount,
+      volumeKg: Math.round(session.volume),
+      // Every set logged, including any whose load was not recorded and so
+      // could not contribute to the volume above.
+      sets: session.countedSets + session.excludedSets,
     },
   };
 }
@@ -59,12 +69,13 @@ function relativeDay(iso: string): string {
 
 export default async function WorkoutsPage() {
   // Real history when the member has trained; the sample shelf until then.
-  const { data: completed } = await getCompletedSessions(3);
-  const realHistory = completed
+  // Real sessions only. A member with nothing logged sees an empty state
+  // rather than a sample list: an invented history on the page that shows what
+  // you have trained is the one place a placeholder cannot be harmless.
+  const { data: completed, error: historyError } = await getCompletedSessionHistory(3);
+  const history = completed
     .map(toRecentCard)
     .filter((entry): entry is Workout => entry !== null);
-  const historyIsReal = realHistory.length > 0;
-  const history = historyIsReal ? realHistory : recentWorkouts;
 
   return (
     <>
@@ -187,20 +198,52 @@ export default async function WorkoutsPage() {
                 Recent Workouts
               </span>
             }
-            description={
-              historyIsReal
-                ? "Your completed sessions, newest first."
-                : "Sample sessions — your own appear here once you finish a workout."
+            description="Your completed sessions, newest first."
+            action={
+              <Button href="/workouts/history" variant="secondary" className="hidden md:inline-flex">
+                View All
+                <ArrowRight
+                  className="h-4 w-4 transition-transform duration-300 group-hover/btn:translate-x-1"
+                  aria-hidden="true"
+                />
+              </Button>
             }
           />
 
-          <ul className="mt-12 grid gap-6 md:grid-cols-2 lg:grid-cols-3">
-            {history.map((workout, index) => (
-              <li key={`${workout.slug}-${index}`}>
-                <WorkoutCard workout={workout} variant="recent" index={index} />
-              </li>
-            ))}
-          </ul>
+          {history.length === 0 ? (
+            <div className="mt-12">
+              <EmptyState
+                icon={History}
+                title={
+                  historyError
+                    ? "We couldn't load your history"
+                    : "No completed workouts yet"
+                }
+                description={
+                  historyError
+                    ? "Your sessions are safe — we just couldn't read them this time. Refreshing usually clears it."
+                    : "Finish a session and it appears here, with the time, sets and volume you actually logged."
+                }
+              />
+            </div>
+          ) : (
+            <ul className="mt-12 grid gap-6 md:grid-cols-2 lg:grid-cols-3">
+              {history.map((workout, index) => (
+                <li key={`${workout.slug}-${index}`}>
+                  <WorkoutCard workout={workout} variant="recent" index={index} />
+                </li>
+              ))}
+            </ul>
+          )}
+
+          {history.length > 0 ? (
+            <div className="mt-10 flex justify-center md:hidden">
+              <Button href="/workouts/history" variant="secondary">
+                View All History
+                <ArrowRight className="h-4 w-4" aria-hidden="true" />
+              </Button>
+            </div>
+          ) : null}
         </Container>
       </section>
 

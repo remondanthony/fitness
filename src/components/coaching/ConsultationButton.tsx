@@ -33,10 +33,9 @@ type ConsultationButtonProps = {
  * Opens the consultation request placeholder. The form is complete and
  * validated, but booking is not connected — the dialog says so plainly.
  *
- * Submitting goes through a Server Action that checks the Elite entitlement
- * before anything else. The page only renders this button for a member who
- * already has it, so the server check is the backstop rather than the usual
- * path: it is what answers a request that did not come from this button.
+ * Submitting goes through a Server Action which validates the request on the
+ * server. Booking is not connected to any scheduling system, and the dialog
+ * says so rather than implying an appointment was made.
  */
 export function ConsultationButton({
   coachName,
@@ -65,12 +64,6 @@ export function ConsultationButton({
 
     if (result.status === "error") {
       setError(result.message);
-      return;
-    }
-
-    if (result.status === "locked") {
-      setOpen(false);
-      notify({ tone: "info", title: "Elite membership required", description: result.message });
       return;
     }
 

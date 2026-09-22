@@ -4,7 +4,6 @@ import {
   Dumbbell,
   Lock,
   Settings2,
-  ShieldCheck,
   Target,
   User,
   type LucideIcon,
@@ -60,7 +59,6 @@ export const profileDetailMeta = {
 
 export type SettingsSectionId =
   | "account"
-  | "membership"
   | "preferences"
   | "notifications"
   | "privacy";
@@ -76,12 +74,6 @@ export const settingsSections: {
     label: "Account",
     description: "Your name, email and password.",
     icon: User,
-  },
-  {
-    id: "membership",
-    label: "Membership",
-    description: "Your current plan and what it includes.",
-    icon: ShieldCheck,
   },
   {
     id: "preferences",

@@ -6,10 +6,8 @@ import { Breadcrumbs } from "@/components/ui/Breadcrumbs";
 import { Container } from "@/components/ui/Container";
 import { AccountSettings } from "@/components/settings/AccountSettings";
 import { getAccountView } from "@/lib/data/account-view";
-import { getMembership } from "@/lib/data/membership";
 import { AvatarSettings } from "@/components/settings/AvatarSettings";
 import { PreferencesSettings } from "@/components/settings/PreferencesSettings";
-import { MembershipSection } from "@/components/settings/MembershipSection";
 import { SettingsSection } from "@/components/settings/SettingsSection";
 import { ToggleGroup } from "@/components/settings/ToggleGroup";
 import {
@@ -25,9 +23,8 @@ export const metadata: Metadata = {
 
 export default async function SettingsPage() {
   // The route is protected, so a member is always present here.
-  const [view, membership] = await Promise.all([getAccountView(), getMembership()]);
-  const [account, membershipSection, preferences, notifications, privacy] =
-    settingsSections;
+  const view = await getAccountView();
+  const [account, preferences, notifications, privacy] = settingsSections;
 
   return (
     <section className="py-10 lg:py-14">
@@ -100,15 +97,6 @@ export default async function SettingsPage() {
                   displayName={view?.displayName ?? ""}
                 />
               </div>
-            </SettingsSection>
-
-            <SettingsSection
-              id={membershipSection.id}
-              title={membershipSection.label}
-              description={membershipSection.description}
-              icon={membershipSection.icon}
-            >
-              <MembershipSection tier={membership.tier} loadError={membership.loadError} />
             </SettingsSection>
 
             <SettingsSection

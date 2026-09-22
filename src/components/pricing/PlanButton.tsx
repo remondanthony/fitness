@@ -9,7 +9,13 @@ type PlanButtonProps = {
   featured: boolean;
 };
 
-/** Plan CTA. Checkout is not connected, and the feedback says exactly that. */
+/**
+ * Plan CTA.
+ *
+ * STRONGER is a portfolio build with no payment processing of any kind. The
+ * button is deliberately inert and says so: no checkout opens, nothing is
+ * charged, and no success is reported for something that did not happen.
+ */
 export function PlanButton({ plan, label, featured }: PlanButtonProps) {
   const { notify } = useToast();
 
@@ -19,8 +25,8 @@ export function PlanButton({ plan, label, featured }: PlanButtonProps) {
       onClick={() =>
         notify({
           tone: "info",
-          title: "Checkout isn't connected yet",
-          description: `The ${plan} plan can't be purchased until payments are set up. Nothing was charged.`,
+          title: "This is a demo",
+          description: `STRONGER doesn't take payments — the ${plan} plan is here to show the pricing page. Nothing was charged, and every feature is already available to try.`,
         })
       }
       className={cn(

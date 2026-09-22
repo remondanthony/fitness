@@ -1,4 +1,4 @@
-import { ArrowRight, CalendarDays, Mail, Settings, ShieldCheck } from "lucide-react";
+import { ArrowRight, CalendarDays, Mail, Settings } from "lucide-react";
 import Link from "next/link";
 import type { Metadata } from "next";
 
@@ -10,11 +10,10 @@ import { ImagePlaceholder } from "@/components/ui/ImagePlaceholder";
 import { SectionHeading } from "@/components/ui/SectionHeading";
 import { ProgramCard } from "@/components/programs/ProgramCard";
 import { getAccountView } from "@/lib/data/account-view";
-import { getMembership } from "@/lib/data/membership";
-import { tierLabel } from "@/lib/membership/tiers";
 import { profile, profileDetailMeta } from "@/data/profile";
 import { getProgram } from "@/data/programs";
-import { progressStats } from "@/data/progress";
+import { getTrainingSummary } from "@/lib/data/progress-analytics";
+import { formatNumber } from "@/lib/format";
 
 export const metadata: Metadata = {
   title: "Profile",
@@ -23,7 +22,34 @@ export const metadata: Metadata = {
 
 export default async function ProfilePage() {
   // The route is protected, so a member is always present here.
-  const [view, membership] = await Promise.all([getAccountView(), getMembership()]);
+  const [view, training] = await Promise.all([getAccountView(), getTrainingSummary()]);
+
+  // The snapshot used to show invented figures. These four are the member's
+  // own, taken from completed sessions; a failed read shows a dash rather than
+  // a zero, because "no workouts" and "we could not look" are different things.
+  const unread = "—";
+  const snapshot = [
+    {
+      id: "workouts",
+      label: "Workouts",
+      value: training.error ? unread : formatNumber(training.data.totalSessions),
+    },
+    {
+      id: "volume",
+      label: "Total Volume",
+      value: training.error ? unread : `${formatNumber(training.data.totalVolume)} kg`,
+    },
+    {
+      id: "streak",
+      label: "Current Streak",
+      value: training.error ? unread : `${training.data.streak.current}`,
+    },
+    {
+      id: "best-streak",
+      label: "Best Streak",
+      value: training.error ? unread : `${training.data.streak.longest}`,
+    },
+  ];
   const currentProgram = getProgram(profile.currentProgramSlug);
 
   const email = view?.email ?? "";
@@ -79,10 +105,6 @@ export default async function ProfilePage() {
 
             <div className="min-w-0 flex-1">
               <div className="flex flex-wrap items-center gap-2">
-                <Badge variant="accent" className="gap-1.5">
-                  <ShieldCheck className="h-3 w-3" aria-hidden="true" />
-                  {tierLabel(membership.tier)} member
-                </Badge>
                 <Badge variant="outline" className="gap-1.5">
                   <CalendarDays className="h-3 w-3" aria-hidden="true" />
                   {view?.memberSince
@@ -162,7 +184,7 @@ export default async function ProfilePage() {
           {/* Snapshot */}
           <Card tone="glass" flush className="mt-6 rounded-3xl">
             <dl className="divide-chalk/8 grid grid-cols-2 divide-x divide-y lg:grid-cols-4 lg:divide-y-0">
-              {progressStats.map((stat) => (
+              {snapshot.map((stat) => (
                 <div key={stat.id} className="p-6 text-center sm:p-7">
                   <dd className="font-display text-chalk text-2xl sm:text-3xl">
                     {stat.value}

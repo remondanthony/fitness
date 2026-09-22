@@ -11,9 +11,6 @@ import { MetricCard } from "@/components/ui/MetricCard";
 import { SectionHeading } from "@/components/ui/SectionHeading";
 import { StarRating } from "@/components/ui/StarRating";
 import { ConsultationButton } from "@/components/coaching/ConsultationButton";
-import { LockedFeature } from "@/components/membership/LockedFeature";
-import { getMembership } from "@/lib/data/membership";
-import { hasEntitlement } from "@/lib/membership/tiers";
 import { ProgramCard } from "@/components/programs/ProgramCard";
 import { TestimonialCard } from "@/components/coaching/TestimonialCard";
 import { coaches, getCoach } from "@/data/coaching";
@@ -41,12 +38,6 @@ export default async function CoachDetailPage({
   const coach = getCoach(slug);
 
   if (!coach) notFound();
-
-  // Resolved once per render, on the server. The dialog's own Server Action
-  // repeats the check, so hiding the button is presentation rather than the
-  // protection itself.
-  const membership = await getMembership();
-  const canBookConsultation = hasEntitlement(membership.tier, "coach-consultation");
 
   const programs = coach.programSlugs
     .map((programSlug) => getProgram(programSlug))
@@ -107,16 +98,7 @@ export default async function CoachDetailPage({
               </p>
 
               <div className="mt-9">
-                {canBookConsultation ? (
-                  <ConsultationButton coachName={coach.name} />
-                ) : (
-                  <LockedFeature
-                    entitlement="coach-consultation"
-                    signedIn={membership.signedIn}
-                    description={`Consultations with ${coach.name} are part of Elite membership.`}
-                    className="max-w-xl"
-                  />
-                )}
+                <ConsultationButton coachName={coach.name} />
               </div>
             </div>
 
@@ -282,16 +264,7 @@ export default async function CoachDetailPage({
               {coach.availability}. Start with a 30-minute consultation to see whether the
               fit is right.
             </p>
-            {canBookConsultation ? (
-              <ConsultationButton coachName={coach.name} />
-            ) : (
-              <LockedFeature
-                entitlement="coach-consultation"
-                signedIn={membership.signedIn}
-                description={`Consultations with ${coach.name} are part of Elite membership.`}
-                className="w-full max-w-xl text-left"
-              />
-            )}
+            <ConsultationButton coachName={coach.name} />
           </Card>
         </Container>
       </section>

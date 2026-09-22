@@ -3,7 +3,7 @@ import { cache } from "react";
 import { programs } from "@/data/programs";
 import { workouts } from "@/data/workouts";
 import { getPersonalization } from "@/lib/data/personalization";
-import { getCompletedSessions } from "@/lib/data/workout-sessions";
+import { getCompletedSessionHistory } from "@/lib/data/progress-analytics";
 import {
   hasUsableSignals,
   rankPrograms,
@@ -22,7 +22,7 @@ import type { Workout } from "@/data/workouts";
  * This is the only place the engine meets the database. The engine itself
  * stays pure, the UI receives a finished list, and neither contains a scoring
  * rule. Ownership comes from the session inside `getPersonalization` and
- * `getCompletedSessions`; no user id is accepted here, so there is no
+ * `getCompletedSessionHistory`; no user id is accepted here, so there is no
  * parameter a browser could set to read somebody else's recommendations.
  *
  * The catalogue is static TypeScript in src/data, so ranking costs no queries
@@ -48,7 +48,7 @@ export type Recommendations = {
 export const getRecommendations = cache(async (): Promise<Recommendations | null> => {
   const [personalization, history] = await Promise.all([
     getPersonalization(),
-    getCompletedSessions(RECENT_SESSION_WINDOW),
+    getCompletedSessionHistory(RECENT_SESSION_WINDOW),
   ]);
 
   if (!personalization) return null;

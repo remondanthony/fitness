@@ -7,16 +7,15 @@ and must not be pulled into a client component.
 
 ## Ownership
 
-Every wired helper derives the member from the session with `getSessionUser()`
-rather than taking a `userId` from the caller, so a client value can never
-decide whose rows are read or written. Row Level Security is the actual
-enforcement; the session lookup is what makes each query ask for the right rows
-in the first place.
+Every helper derives the member from the session with `getSessionUser()` rather
+than taking a `userId` from the caller, so a client value can never decide
+whose rows are read or written. Row Level Security is the actual enforcement;
+the session lookup is what makes each query ask for the right rows in the first
+place.
 
-`progress.ts` and `workouts.ts` are the exception: they are unused scaffolding
-from the original schema work and still take a `userId` argument. RLS would
-still confine them to the caller's own rows, but follow the session-derived
-pattern above before wiring either one to a page.
+There are no exceptions. `progress.ts` and `workouts.ts` were unused scaffolding
+from the original schema work that still took a `userId` argument; both were
+removed rather than left as a pattern to copy.
 
 ## Results
 
