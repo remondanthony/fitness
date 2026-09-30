@@ -277,6 +277,7 @@ export const programs: Program[] = [
     sessionLength: "30–40 min",
     goalLabels: ["General Fitness", "Strength"],
     artwork: "generic",
+    image: "/foundation.png",
     outcomes: [
       "Own the six fundamental movement patterns",
       "Build a training habit that survives a busy week",
