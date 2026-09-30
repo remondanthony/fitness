@@ -343,6 +343,7 @@ export const programs: Program[] = [
     sessionLength: "60–75 min",
     goalLabels: ["Strength", "Endurance"],
     artwork: "athlete",
+    image: "/athlete.png",
     outcomes: [
       "Increase vertical jump and sprint acceleration",
       "Raise your strength ceiling without losing speed",
