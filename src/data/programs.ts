@@ -209,6 +209,7 @@ export const programs: Program[] = [
     sessionLength: "45–55 min",
     goalLabels: ["Fat Loss", "Muscle Gain"],
     artwork: "athlete",
+    image: "/lean.png",
     outcomes: [
       "Hold on to strength through a calorie deficit",
       "Improve work capacity without daily soreness",
