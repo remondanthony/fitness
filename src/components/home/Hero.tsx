@@ -4,7 +4,6 @@ import { Badge } from "@/components/ui/Badge";
 import { Button } from "@/components/ui/Button";
 import { Card } from "@/components/ui/Card";
 import { Container } from "@/components/ui/Container";
-import { ImagePlaceholder } from "@/components/ui/ImagePlaceholder";
 import { MetricCard } from "@/components/ui/MetricCard";
 import { heroMetrics } from "@/lib/content";
 
@@ -84,13 +83,30 @@ export function Hero() {
               className="bg-accent-500/20 absolute -inset-6 -z-10 rounded-[2.5rem] blur-3xl"
               aria-hidden="true"
             />
-            <ImagePlaceholder
-              variant="hero"
-              aspect="hero"
-              alt="Athlete pressing a barbell overhead in a dark, cinematic gym"
-              caption="The Strength Floor"
-              className="animate-scale-in rounded-3xl shadow-lift"
-            />
+            <div
+              className="bg-ink-900 border-chalk/8 relative isolate aspect-[4/3] overflow-hidden rounded-2xl border lg:aspect-[5/6] animate-scale-in rounded-3xl shadow-lift"
+              role="img"
+              aria-label="Athlete pressing a barbell overhead in a dark, cinematic gym"
+            >
+              <img
+                src="/hero-athlete.webp"
+                alt="Athlete pressing a barbell overhead in a dark, cinematic gym"
+                className="absolute inset-0 h-full w-full object-cover object-center"
+                fetchPriority="high"
+                decoding="async"
+              />
+              <div
+                className="pointer-events-none absolute inset-0 bg-gradient-to-t from-black/55 via-black/5 to-black/15"
+                aria-hidden="true"
+              />
+              <div
+                className="pointer-events-none absolute inset-0 bg-[radial-gradient(circle_at_50%_45%,transparent_35%,rgba(0,0,0,0.3)_100%)]"
+                aria-hidden="true"
+              />
+              <span className="border-chalk/10 bg-ink-950/60 text-mist absolute bottom-4 left-4 rounded-full border px-3 py-1 text-[10px] font-semibold tracking-[0.16em] uppercase backdrop-blur-md">
+                The Strength Floor
+              </span>
+            </div>
           </div>
         </div>
 
