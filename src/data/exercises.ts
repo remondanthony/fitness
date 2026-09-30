@@ -181,6 +181,7 @@ export const exercises: Exercise[] = [
     equipmentLabel: "Bodyweight",
     difficulty: "Beginner",
     artwork: "athlete",
+    image: "/pushup.png",
     summary:
       "A full-body press that trains the chest and triceps while demanding real trunk control.",
     musclesWorked: {
