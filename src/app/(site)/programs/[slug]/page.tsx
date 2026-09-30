@@ -3,6 +3,8 @@ import Link from "next/link";
 import { notFound } from "next/navigation";
 import type { Metadata } from "next";
 
+import Image from "next/image";
+
 import { Badge } from "@/components/ui/Badge";
 import { Breadcrumbs } from "@/components/ui/Breadcrumbs";
 import { Button } from "@/components/ui/Button";
@@ -103,13 +105,32 @@ export default async function ProgramDetailPage({
                 className="bg-accent-500/20 absolute -inset-6 -z-10 rounded-[2.5rem] blur-3xl"
                 aria-hidden="true"
               />
-              <ImagePlaceholder
-                variant={program.artwork}
-                aspect="wide"
-                alt={`${program.title} programme artwork`}
-                caption={program.duration}
-                className="rounded-3xl shadow-lift"
-              />
+              {/* The programme's own photograph when it has one, the generated
+                  artwork otherwise. The 16:9 frame and the duration badge are
+                  kept either way so the hero layout does not shift. */}
+              {program.image ? (
+                <div className="border-chalk/8 bg-ink-900 shadow-lift relative isolate aspect-[16/9] overflow-hidden rounded-3xl border">
+                  <Image
+                    src={program.image}
+                    alt={`${program.title} programme`}
+                    fill
+                    priority
+                    sizes="(min-width: 1024px) 50vw, 100vw"
+                    className="object-cover"
+                  />
+                  <span className="border-chalk/10 bg-ink-950/70 text-mist absolute bottom-4 left-4 rounded-full border px-3 py-1 text-[10px] font-semibold tracking-[0.16em] uppercase backdrop-blur-md">
+                    {program.duration}
+                  </span>
+                </div>
+              ) : (
+                <ImagePlaceholder
+                  variant={program.artwork}
+                  aspect="wide"
+                  alt={`${program.title} programme artwork`}
+                  caption={program.duration}
+                  className="rounded-3xl shadow-lift"
+                />
+              )}
             </div>
           </div>
 
