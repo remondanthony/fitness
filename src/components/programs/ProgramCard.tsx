@@ -1,6 +1,8 @@
 import { ArrowRight } from "lucide-react";
 import Link from "next/link";
 
+import Image from "next/image";
+
 import { Badge } from "@/components/ui/Badge";
 import { Card } from "@/components/ui/Card";
 import { ImagePlaceholder } from "@/components/ui/ImagePlaceholder";
@@ -38,13 +40,28 @@ export function ProgramCard({ program, variant = "full", index = 0 }: ProgramCar
   return (
     <Card interactive flush className="group flex h-full flex-col">
       <div className="relative overflow-hidden">
-        <ImagePlaceholder
-          seed={index}
-          variant={program.artwork}
-          aspect="photo"
-          alt={`${program.title} program artwork`}
-          className="rounded-none border-0 border-b transition-transform duration-500 ease-out group-hover:scale-[1.02]"
-        />
+        {/* A real photograph when the program has one, the generated artwork
+            otherwise. The 4:3 frame is kept either way so every card in the
+            grid stays the same height. */}
+        {program.image ? (
+          <div className="border-chalk/8 bg-ink-900 relative aspect-[4/3] overflow-hidden border-b transition-transform duration-500 ease-out group-hover:scale-[1.02]">
+            <Image
+              src={program.image}
+              alt={`${program.title} program`}
+              fill
+              sizes="(min-width: 1024px) 33vw, (min-width: 640px) 50vw, 100vw"
+              className="object-cover"
+            />
+          </div>
+        ) : (
+          <ImagePlaceholder
+            seed={index}
+            variant={program.artwork}
+            aspect="photo"
+            alt={`${program.title} program artwork`}
+            className="rounded-none border-0 border-b transition-transform duration-500 ease-out group-hover:scale-[1.02]"
+          />
+        )}
         <div className="absolute top-4 left-4">
           <Badge variant="solid" size="sm">
             {program.level}

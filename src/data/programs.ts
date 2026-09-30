@@ -41,6 +41,12 @@ export type Program = Faceted & {
   sessionLength: string;
   goalLabels: string[];
   artwork: ImagePlaceholderVariant;
+  /**
+   * Path to a real photograph in /public. When present the card renders it
+   * instead of the generated artwork; `artwork` stays as the fallback for
+   * programs that have no photo yet.
+   */
+  image?: string;
   outcomes: string[];
   /** Recurring session names that make up one training week. */
   split: string[];
@@ -118,6 +124,7 @@ export const programs: Program[] = [
     sessionLength: "60–75 min",
     goalLabels: ["Muscle Gain", "Strength"],
     artwork: "program",
+    image: "/power.png",
     outcomes: [
       "Add measurable weight to your squat, bench and deadlift",
       "Build visible size across chest, back and shoulders",
