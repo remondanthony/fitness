@@ -21,6 +21,12 @@ export type Exercise = Faceted & {
   equipmentLabel: string;
   difficulty: Difficulty;
   artwork: ImagePlaceholderVariant;
+  /**
+   * Path to a real photograph in /public. When present it replaces the
+   * generated artwork wherever this exercise is shown; `artwork` stays as the
+   * fallback for exercises that have no photo yet.
+   */
+  image?: string;
   summary: string;
   musclesWorked: {
     primary: string[];
@@ -81,6 +87,7 @@ export const exercises: Exercise[] = [
     equipmentLabel: "Barbell",
     difficulty: "Intermediate",
     artwork: "program",
+    image: "/bar.png",
     summary:
       "The benchmark upper-body press. Builds chest, front delts and triceps under heavy, repeatable load.",
     musclesWorked: {

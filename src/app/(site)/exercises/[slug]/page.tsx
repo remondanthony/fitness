@@ -1,4 +1,5 @@
 import { AlertTriangle, ArrowUpRight, History, Lightbulb, Target } from "lucide-react";
+import Image from "next/image";
 import Link from "next/link";
 import { notFound } from "next/navigation";
 import type { Metadata } from "next";
@@ -105,13 +106,32 @@ export default async function ExerciseDetailPage({
                 className="bg-accent-500/20 absolute -inset-6 -z-10 rounded-[2.5rem] blur-3xl"
                 aria-hidden="true"
               />
-              <ImagePlaceholder
-                variant={exercise.artwork}
-                aspect="photo"
-                alt={`${exercise.name} illustration`}
-                caption={exercise.equipmentLabel}
-                className="rounded-3xl shadow-lift"
-              />
+              {/* The exercise's own photograph when it has one. The 4:3 frame and
+                  the equipment badge are kept either way, so the hero layout does
+                  not depend on whether a photo exists. */}
+              {exercise.image ? (
+                <div className="border-chalk/8 bg-ink-900 shadow-lift relative isolate aspect-[4/3] overflow-hidden rounded-3xl border">
+                  <Image
+                    src={exercise.image}
+                    alt={`${exercise.name} being performed`}
+                    fill
+                    priority
+                    sizes="(min-width: 1024px) 50vw, 100vw"
+                    className="object-cover"
+                  />
+                  <span className="border-chalk/10 bg-ink-950/70 text-mist absolute bottom-4 left-4 rounded-full border px-3 py-1 text-[10px] font-semibold tracking-[0.16em] uppercase backdrop-blur-md">
+                    {exercise.equipmentLabel}
+                  </span>
+                </div>
+              ) : (
+                <ImagePlaceholder
+                  variant={exercise.artwork}
+                  aspect="photo"
+                  alt={`${exercise.name} illustration`}
+                  caption={exercise.equipmentLabel}
+                  className="rounded-3xl shadow-lift"
+                />
+              )}
             </div>
           </div>
         </Container>
@@ -244,12 +264,24 @@ export default async function ExerciseDetailPage({
                     tone="raised"
                     className="group flex h-full items-center gap-5 p-5"
                   >
-                    <ImagePlaceholder
-                      variant={alternative.artwork}
-                      aspect="square"
-                      alt=""
-                      className="h-20 w-20 shrink-0 rounded-xl"
-                    />
+                    {alternative.image ? (
+                      <div className="border-chalk/8 bg-ink-900 relative h-20 w-20 shrink-0 overflow-hidden rounded-xl border">
+                        <Image
+                          src={alternative.image}
+                          alt=""
+                          fill
+                          sizes="80px"
+                          className="object-cover"
+                        />
+                      </div>
+                    ) : (
+                      <ImagePlaceholder
+                        variant={alternative.artwork}
+                        aspect="square"
+                        alt=""
+                        className="h-20 w-20 shrink-0 rounded-xl"
+                      />
+                    )}
                     <div className="min-w-0 flex-1">
                       <h3 className="font-display text-chalk group-hover:text-accent-400 text-xl transition-colors duration-300">
                         <Link
