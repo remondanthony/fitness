@@ -228,6 +228,7 @@ export const exercises: Exercise[] = [
     equipmentLabel: "Cable",
     difficulty: "Beginner",
     artwork: "generic",
+    image: "/lat.png",
     summary:
       "The most approachable way to train a vertical pull and build width through the lats.",
     musclesWorked: {
