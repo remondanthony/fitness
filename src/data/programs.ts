@@ -462,6 +462,7 @@ export const programs: Program[] = [
     sessionLength: "25–35 min",
     goalLabels: ["Endurance", "Fat Loss"],
     artwork: "program",
+    image: "/dumbbell.png",
     outcomes: [
       "Raise your aerobic ceiling with minimal equipment",
       "Hold technique while breathing hard",
