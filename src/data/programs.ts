@@ -412,6 +412,7 @@ export const programs: Program[] = [
     sessionLength: "15–20 min",
     goalLabels: ["General Fitness", "Fat Loss"],
     artwork: "generic",
+    image: "/home.png",
     outcomes: [
       "Rebuild a consistent four-day training week",
       "Improve push-up and squat endurance",
