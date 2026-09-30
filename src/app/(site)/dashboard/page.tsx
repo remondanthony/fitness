@@ -8,6 +8,7 @@ import { Card } from "@/components/ui/Card";
 import { Container } from "@/components/ui/Container";
 import { StatCard } from "@/components/ui/StatCard";
 import { RecommendedShelf } from "@/components/dashboard/RecommendedShelf";
+import { ResumeSessionCard } from "@/components/dashboard/ResumeSessionCard";
 import { TodayWorkoutCard } from "@/components/dashboard/TodayWorkoutCard";
 import { getAccountView } from "@/lib/data/account-view";
 import { currentLogDate } from "@/lib/data/daily-date";
@@ -20,26 +21,35 @@ import {
   labelFor,
   levelOptions,
 } from "@/lib/personalization";
+import { getOpenSessionAny } from "@/lib/data/workout-sessions";
 import { getWellnessLog, readingsFromLog } from "@/lib/data/wellness";
 import { buildDailyMetrics } from "@/data/progress";
-import { todaysWorkout } from "@/data/workouts";
+import { getWorkout, workouts } from "@/data/workouts";
+import { REASON_LABEL } from "@/lib/recommendations/rules";
+import { formatDashboardDate, formatGreeting } from "@/lib/progress/daily";
 
 export const metadata: Metadata = {
   title: "Dashboard",
-  description: "Today's session, your daily metrics and where your training stands.",
+  description:
+    "Your suggested session, daily metrics and where your training stands.",
 };
 
 export default async function DashboardPage() {
   // Protected route, so a member is always present.
   // getAccountView and getPersonalization read the same three cached queries,
   // so asking for both costs one round trip each, not two.
-  const [view, wellness, personalization, recommendations, training] =
+  // One clock for the whole render, so the resume window and the card's
+  // "started N hours ago" cannot disagree with each other.
+  const now = new Date();
+
+  const [view, wellness, personalization, recommendations, training, openSession] =
     await Promise.all([
       getAccountView(),
       getWellnessLog(currentLogDate()),
       getPersonalization(),
       getRecommendations(),
       getTrainingSummary(),
+      getOpenSessionAny(now),
     ]);
 
   // A member who has not answered the personalization questions is sent to
@@ -54,6 +64,13 @@ export default async function DashboardPage() {
   // can never disagree about the same day.
   const wellnessTiles = buildDailyMetrics(readingsFromLog(wellness.data));
 
+  // A failed read is not an unlogged day. `readingsFromLog(null)` yields all
+  // nulls, which buildDailyMetrics renders as "Not logged yet" — true for a
+  // member who has not logged, wrong for one whose row we could not read.
+  const wellnessCaption = wellness.error
+    ? "We couldn't read today's log"
+    : null;
+
   const streak = training.data.streak;
 
   // The member's own weekly goal. Without one there is no denominator, so the
@@ -64,6 +81,15 @@ export default async function DashboardPage() {
       : null;
 
   const done = training.data.thisWeekSessions;
+
+  // The hero used to show one hardcoded workout described as "scheduled for
+  // today". Nothing schedules anything — there is no calendar table — so it now
+  // shows the top pick from the recommendation engine already loaded above, and
+  // says it is a suggestion. Falls back to the catalogue's first workout only
+  // so the primary call to action is never empty.
+  const suggested = recommendations?.workouts[0]?.item ?? workouts[0];
+  const topReason = recommendations?.workouts[0]?.reasons[0];
+  const suggestedReason = topReason ? REASON_LABEL[topReason] : null;
 
   const metrics = [
     {
@@ -79,7 +105,9 @@ export default async function DashboardPage() {
           : "Completed this week",
       ring: undefined as boolean | undefined,
     },
-    ...wellnessTiles,
+    ...wellnessTiles.map((tile) =>
+      wellnessCaption ? { ...tile, caption: wellnessCaption } : tile,
+    ),
   ];
 
   // Only greet by name once the member actually has one saved; otherwise the
@@ -102,10 +130,10 @@ export default async function DashboardPage() {
             <div>
               <p className="text-accent-400 flex items-center gap-3 text-[11px] font-semibold tracking-[0.32em] uppercase">
                 <Sunrise className="h-4 w-4" aria-hidden="true" />
-                Monday · Week 12
+                {formatDashboardDate(now)}
               </p>
               <h1 className="font-display text-chalk mt-5 text-5xl break-words sm:text-6xl lg:text-7xl">
-                {firstName ? `Good Morning, ${firstName}.` : "Good Morning."}
+                {formatGreeting(firstName)}
               </h1>
               <p className="text-mist mt-4 text-base sm:text-lg">Ready to train?</p>
 
@@ -151,12 +179,47 @@ export default async function DashboardPage() {
         </Container>
       </section>
 
+      {/* An unfinished session, when there is one recent enough to pick up.
+          A failed read says so rather than implying there is nothing: telling
+          someone mid-workout that they are not mid-workout is worse than
+          admitting we could not look. */}
+      {openSession.error ? (
+        <section className="pt-12 lg:pt-16">
+          <Container>
+            <Card tone="raised" className="p-6">
+              <p className="text-mist text-sm leading-relaxed">
+                We couldn&rsquo;t check whether you have a workout in progress. If you
+                started one, it is safe — open it from{" "}
+                <Link href="/workouts" className="text-accent-400 underline">
+                  Workouts
+                </Link>{" "}
+                to carry on.
+              </p>
+            </Card>
+          </Container>
+        </section>
+      ) : openSession.data ? (
+        <section className="pt-12 lg:pt-16">
+          <Container>
+            <ResumeSessionCard
+              session={openSession.data}
+              workoutTitle={getWorkout(openSession.data.workoutSlug)?.title ?? null}
+              now={now}
+            />
+          </Container>
+        </section>
+      ) : null}
+
       {/* Today + streak */}
       <section className="pt-12 lg:pt-16">
         <Container>
           <div className="grid gap-5 lg:grid-cols-12">
             <div className="lg:col-span-8">
-              <TodayWorkoutCard workout={todaysWorkout} />
+              <TodayWorkoutCard
+                workout={suggested}
+                eyebrow={recommendations?.personalized ? "Suggested For You" : "Start Here"}
+                reason={recommendations?.personalized ? suggestedReason : null}
+              />
             </div>
 
             <Card
@@ -164,10 +227,10 @@ export default async function DashboardPage() {
               className="flex flex-col justify-between gap-8 rounded-3xl p-7 lg:col-span-4"
             >
               <div>
-                <p className="text-fog flex items-center gap-2 text-[10px] font-semibold tracking-[0.24em] uppercase">
+                <h2 className="text-fog flex items-center gap-2 text-[10px] font-semibold tracking-[0.24em] uppercase">
                   <Flame className="text-accent-500 h-3.5 w-3.5" aria-hidden="true" />
                   Workout Streak
-                </p>
+                </h2>
                 <p className="font-display text-chalk mt-6 text-6xl lg:text-7xl">
                   {streak.current} {streak.current === 1 ? "Day" : "Days"}
                 </p>
@@ -230,17 +293,31 @@ export default async function DashboardPage() {
                 <ul className="mt-4 flex items-center gap-2">
                   {streak.lastSevenDays.map((day) => (
                     <li key={day.date} className="flex-1">
+                      {/* The colour and the dot both carry the same fact, and
+                          the screen-reader text states it outright — a `title`
+                          alone is unreliable for assistive tech and invisible
+                          on touch, and the day letter is identical either way. */}
                       <div
                         className={
                           day.trained
-                            ? "border-accent-500/40 bg-accent-500/15 text-accent-400 flex h-11 items-center justify-center rounded-xl border text-[11px] font-semibold"
-                            : "border-chalk/10 bg-chalk/[0.03] text-fog flex h-11 items-center justify-center rounded-xl border text-[11px] font-semibold"
+                            ? "border-accent-500/40 bg-accent-500/15 text-accent-400 flex h-11 flex-col items-center justify-center gap-1 rounded-xl border text-[11px] font-semibold"
+                            : "border-chalk/10 bg-chalk/[0.03] text-fog flex h-11 flex-col items-center justify-center gap-1 rounded-xl border text-[11px] font-semibold"
                         }
-                        title={`${day.date}${day.isToday ? " (today)" : ""} — ${
-                          day.trained ? "trained" : "no session"
-                        }`}
                       >
-                        {day.label}
+                        <span aria-hidden="true">{day.label}</span>
+                        <span
+                          aria-hidden="true"
+                          className={
+                            day.trained
+                              ? "bg-accent-400 h-1 w-1 rounded-full"
+                              : "bg-chalk/20 h-1 w-1 rounded-full"
+                          }
+                        />
+                        <span className="sr-only">
+                          {`${day.date}${day.isToday ? " (today)" : ""}: ${
+                            day.trained ? "trained" : "no session"
+                          }`}
+                        </span>
                       </div>
                     </li>
                   ))}

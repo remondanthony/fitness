@@ -6,8 +6,25 @@ import { Card } from "@/components/ui/Card";
 import { ImagePlaceholder } from "@/components/ui/ImagePlaceholder";
 import { totalSets, type Workout } from "@/data/workouts";
 
-/** The dashboard's primary call to action: start the session planned for today. */
-export function TodayWorkoutCard({ workout }: { workout: Workout }) {
+/**
+ * The dashboard's primary call to action.
+ *
+ * `eyebrow` and `reason` are supplied by the caller so this component needs no
+ * knowledge of the recommendation engine. Nothing schedules workouts — there is
+ * no calendar in the schema — so the label says "suggested", not "scheduled",
+ * and the reason is the engine's own, shown only when the pick was actually
+ * personalised.
+ */
+export function TodayWorkoutCard({
+  workout,
+  eyebrow = "Suggested For You",
+  reason = null,
+}: {
+  workout: Workout;
+  eyebrow?: string;
+  /** Pre-resolved label, e.g. "Matches your goal". Omitted when not personalised. */
+  reason?: string | null;
+}) {
   const stats = [
     { value: String(workout.estimatedMinutes), label: "Min" },
     { value: String(workout.exercises.length), label: "Exercises" },
@@ -34,7 +51,7 @@ export function TodayWorkoutCard({ workout }: { workout: Workout }) {
         <div className="flex flex-col justify-center p-6 sm:p-8">
           <Badge variant="accent" className="w-fit gap-2">
             <span className="bg-accent-500 h-1.5 w-1.5 rounded-full" aria-hidden="true" />
-            Today&apos;s Workout
+            {eyebrow}
           </Badge>
 
           <h2 className="font-display text-chalk mt-5 text-3xl sm:text-4xl lg:text-5xl">
@@ -42,6 +59,10 @@ export function TodayWorkoutCard({ workout }: { workout: Workout }) {
           </h2>
 
           <p className="text-mist mt-4 text-sm leading-relaxed">{workout.summary}</p>
+
+          {reason ? (
+            <p className="text-accent-400 mt-3 text-xs font-semibold">{reason}</p>
+          ) : null}
 
           <dl className="mt-7 flex flex-wrap items-baseline gap-x-7 gap-y-3">
             {stats.map((stat) => (

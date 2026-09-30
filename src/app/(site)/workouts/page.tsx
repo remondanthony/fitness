@@ -13,7 +13,7 @@ import { EmptyState } from "@/components/ui/EmptyState";
 import {
   getWorkout,
   recommendedWorkouts,
-  todaysWorkout,
+  featuredWorkout,
   totalSets,
   type Workout,
 } from "@/data/workouts";
@@ -81,11 +81,12 @@ export default async function WorkoutsPage() {
     <>
       <PageHero
         eyebrow="Workouts"
-        title="Today's Training."
-        description="One session, already planned. Start it when you are ready — everything else can wait."
+        title="Train Today."
+        description="A featured session to start from, your recent history, and what to try next."
       />
 
-      {/* Today's workout */}
+      {/* Featured workout — a catalogue pick, not a schedule. Signed-in
+          members get a personalised suggestion on the dashboard instead. */}
       <section className="py-14 lg:py-20">
         <Container>
           <Card tone="raised" flush className="overflow-hidden rounded-3xl">
@@ -93,9 +94,9 @@ export default async function WorkoutsPage() {
               <div className="relative lg:col-span-5">
                 {/* Ratio-driven on mobile, stretched to the row height from lg up. */}
                 <ImagePlaceholder
-                  variant={todaysWorkout.artwork}
+                  variant={featuredWorkout.artwork}
                   aspect="photo"
-                  alt={`${todaysWorkout.title} artwork`}
+                  alt={`${featuredWorkout.title} artwork`}
                   className="w-full rounded-none border-0 lg:absolute lg:inset-0 lg:aspect-auto lg:h-full"
                 />
                 <div
@@ -111,23 +112,23 @@ export default async function WorkoutsPage() {
                       className="bg-accent-500 h-1.5 w-1.5 rounded-full"
                       aria-hidden="true"
                     />
-                    Today
+                    Featured
                   </Badge>
-                  <Badge variant="outline">{todaysWorkout.level}</Badge>
+                  <Badge variant="outline">{featuredWorkout.level}</Badge>
                 </div>
 
                 <h2 className="font-display text-chalk mt-6 text-4xl sm:text-5xl lg:text-6xl">
-                  {todaysWorkout.title}
+                  {featuredWorkout.title}
                 </h2>
 
                 <p className="text-mist mt-5 max-w-lg text-sm leading-relaxed sm:text-base">
-                  {todaysWorkout.summary}
+                  {featuredWorkout.summary}
                 </p>
 
                 <div className="mt-8 flex flex-wrap items-center gap-x-8 gap-y-4">
                   <p className="flex items-baseline gap-2">
                     <span className="font-display text-chalk text-4xl">
-                      {todaysWorkout.estimatedMinutes}
+                      {featuredWorkout.estimatedMinutes}
                     </span>
                     <span className="text-fog text-[11px] font-semibold tracking-[0.2em] uppercase">
                       Min
@@ -135,7 +136,7 @@ export default async function WorkoutsPage() {
                   </p>
                   <p className="flex items-baseline gap-2">
                     <span className="font-display text-chalk text-4xl">
-                      {todaysWorkout.exercises.length}
+                      {featuredWorkout.exercises.length}
                     </span>
                     <span className="text-fog text-[11px] font-semibold tracking-[0.2em] uppercase">
                       Exercises
@@ -143,7 +144,7 @@ export default async function WorkoutsPage() {
                   </p>
                   <p className="flex items-baseline gap-2">
                     <span className="font-display text-chalk text-4xl">
-                      {totalSets(todaysWorkout)}
+                      {totalSets(featuredWorkout)}
                     </span>
                     <span className="text-fog text-[11px] font-semibold tracking-[0.2em] uppercase">
                       Sets
@@ -156,13 +157,13 @@ export default async function WorkoutsPage() {
                     Target Muscles
                   </p>
                   <p className="text-chalk mt-2 text-sm font-semibold">
-                    {todaysWorkout.targetMuscles.join(" · ")}
+                    {featuredWorkout.targetMuscles.join(" · ")}
                   </p>
                 </div>
 
                 <div className="mt-9 flex flex-col gap-3 sm:flex-row sm:items-center">
                   <Button
-                    href={`/workouts/${todaysWorkout.slug}/start`}
+                    href={`/workouts/${featuredWorkout.slug}/start`}
                     size="lg"
                     pendingLabel="Starting…"
                   >
@@ -173,7 +174,7 @@ export default async function WorkoutsPage() {
                     />
                   </Button>
                   <Button
-                    href={`/workouts/${todaysWorkout.slug}`}
+                    href={`/workouts/${featuredWorkout.slug}`}
                     size="lg"
                     variant="secondary"
                   >

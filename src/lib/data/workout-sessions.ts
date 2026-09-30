@@ -1,4 +1,5 @@
 import { getSessionUser } from "@/lib/auth/session";
+import { pickResumable, resumeCutoff } from "@/lib/progress/resume";
 import { createClient } from "@/lib/supabase/server";
 import { getWorkout } from "@/data/workouts";
 import type { Tables } from "@/types/database";
@@ -195,4 +196,87 @@ export async function completeSession(input: {
     .eq("completed", false);
 
   return { error: error ? "We couldn't save your workout." : null };
+}
+
+export type ResumableSession = {
+  id: string;
+  workoutSlug: string;
+  startedAt: string;
+  /** Sets already recorded against this session. Counted, never estimated. */
+  loggedSets: number;
+};
+
+/**
+ * The member's newest unfinished session, if one is recent enough to resume.
+ *
+ * `getOpenSession` answers "is this workout in progress?" and needs a slug for
+ * it. This answers the question the dashboard actually has — "am I in the
+ * middle of anything?" — which no existing function could.
+ *
+ * Read-only in every sense. Nothing is deleted, nothing is completed, no
+ * timestamp is touched: a session outside the window simply is not offered, and
+ * its row is left exactly as it was.
+ *
+ * Ownership comes from the session. The function takes no user id, and RLS
+ * scopes the rows again beneath the explicit filter, so there is no argument a
+ * browser could set to read somebody else's training.
+ *
+ * `now` is injectable so the eligibility window is testable; callers leave it
+ * alone.
+ */
+export async function getOpenSessionAny(now: Date = new Date()): Promise<{
+  data: ResumableSession | null;
+  error: boolean;
+}> {
+  const user = await getSessionUser();
+  if (!user) return { data: null, error: false };
+
+  const supabase = await createClient();
+
+  const { data, error } = await supabase
+    .from("workout_sessions")
+    .select("id, workout_slug, started_at")
+    .eq("user_id", user.id)
+    .eq("completed", false)
+    .is("completed_at", null)
+    // One clock for both sides: the cutoff is computed in the application and
+    // used here and in `pickResumable`, rather than comparing against the
+    // database's own now().
+    .gte("started_at", resumeCutoff(now))
+    .order("started_at", { ascending: false })
+    // A handful rather than one, so a row with a corrupt or future timestamp
+    // cannot hide the session the member is actually in.
+    .limit(5);
+
+  // A failed read is not an absence of sessions. Reporting it as "nothing to
+  // resume" would tell someone mid-workout that they were not.
+  if (error) return { data: null, error: true };
+
+  const candidate = pickResumable(
+    (data ?? []).map((row) => ({
+      id: row.id,
+      workoutSlug: row.workout_slug,
+      startedAt: row.started_at,
+    })),
+    now,
+  );
+
+  if (!candidate) return { data: null, error: false };
+
+  const { count, error: countError } = await supabase
+    .from("exercise_logs")
+    .select("id", { count: "exact", head: true })
+    .eq("session_id", candidate.id);
+
+  if (countError) return { data: null, error: true };
+
+  return {
+    data: {
+      id: candidate.id,
+      workoutSlug: candidate.workoutSlug,
+      startedAt: candidate.startedAt,
+      loggedSets: count ?? 0,
+    },
+    error: false,
+  };
 }

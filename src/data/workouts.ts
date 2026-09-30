@@ -422,15 +422,21 @@ export const workouts: Workout[] = [
   },
 ];
 
-/** The session scheduled for today. */
-export const todaysWorkoutSlug = "upper-body-power";
+/**
+ * The workout the catalogue leads with.
+ *
+ * Nothing schedules workouts — there is no calendar in the schema — so this is
+ * a featured pick, the same for everyone, and the UI presents it as one. A
+ * signed-in member gets a ranked suggestion on the dashboard instead.
+ */
+export const featuredWorkoutSlug = "upper-body-power";
 
 export function getWorkout(slug: string): Workout | undefined {
   return workouts.find((workout) => workout.slug === slug);
 }
 
-export const todaysWorkout = workouts.find(
-  (workout) => workout.slug === todaysWorkoutSlug,
+export const featuredWorkout = workouts.find(
+  (workout) => workout.slug === featuredWorkoutSlug,
 )!;
 
 /** Sessions suggested next. */
