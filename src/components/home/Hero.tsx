@@ -1,4 +1,5 @@
 import { ArrowRight } from "lucide-react";
+import Image from "next/image";
 
 import { Badge } from "@/components/ui/Badge";
 import { Button } from "@/components/ui/Button";
@@ -83,38 +84,31 @@ export function Hero() {
               className="bg-accent-500/20 absolute -inset-6 -z-10 rounded-[2.5rem] blur-3xl"
               aria-hidden="true"
             />
-            <div
-              className="bg-ink-900 border-chalk/8 relative isolate aspect-[4/3] overflow-hidden rounded-2xl border lg:aspect-[5/6] animate-scale-in rounded-3xl shadow-lift"
-              role="img"
-              aria-label="Athlete pressing a barbell overhead in a dark, cinematic gym"
-            >
-              <img
-                src="/hero-athlete.webp"
+            {/* The hero photograph is 3:2, and the subject sits dead centre
+                with the barbell spanning the top. The frame keeps that ratio so
+                neither plate is cropped away — the old placeholder's portrait
+                box would have cut both ends off on desktop. */}
+            <div className="animate-scale-in border-chalk/8 bg-ink-900 shadow-lift relative isolate aspect-[3/2] overflow-hidden rounded-3xl border">
+              <Image
+                src="/hero.png"
                 alt="Athlete pressing a barbell overhead in a dark, cinematic gym"
-                className="absolute inset-0 h-full w-full object-cover object-center"
-                fetchPriority="high"
-                decoding="async"
+                fill
+                priority
+                sizes="(min-width: 1024px) 50vw, 100vw"
+                className="object-cover"
               />
-              <div
-                className="pointer-events-none absolute inset-0 bg-gradient-to-t from-black/55 via-black/5 to-black/15"
-                aria-hidden="true"
-              />
-              <div
-                className="pointer-events-none absolute inset-0 bg-[radial-gradient(circle_at_50%_45%,transparent_35%,rgba(0,0,0,0.3)_100%)]"
-                aria-hidden="true"
-              />
-              <span className="border-chalk/10 bg-ink-950/60 text-mist absolute bottom-4 left-4 rounded-full border px-3 py-1 text-[10px] font-semibold tracking-[0.16em] uppercase backdrop-blur-md">
-                The Strength Floor
-              </span>
             </div>
           </div>
         </div>
 
         {/* Floating metrics panel */}
+        {/* The pull-up was tuned for a tall portrait placeholder. The real
+            photograph is 3:2, which makes the text column the taller of the
+            two, so a negative margin here would ride over the line above it. */}
         <Card
           tone="glass"
           flush
-          className="animate-rise relative z-10 mt-10 rounded-3xl lg:-mt-14"
+          className="animate-rise relative z-10 mt-12 rounded-3xl lg:mt-14"
           style={{ animationDelay: "620ms" }}
         >
           <div className="divide-chalk/8 grid grid-cols-2 divide-y divide-x sm:divide-y-0 lg:grid-cols-4">
