@@ -134,6 +134,7 @@ export const exercises: Exercise[] = [
     equipmentLabel: "Dumbbell",
     difficulty: "Beginner",
     artwork: "generic",
+    image: "/incline.png",
     summary:
       "Biases the upper chest and lets each arm work independently through a longer range.",
     musclesWorked: {
